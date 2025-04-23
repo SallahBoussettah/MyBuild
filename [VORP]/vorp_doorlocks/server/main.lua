@@ -25,36 +25,49 @@ Core.Callback.Register("vorp_doorlocks:Server:CheckDoorState", function(source, 
 
     -- export wasn't used to allow or disallow so we check for permissions, other wise if true then player was allowed so we skip permissions checks
     if value.isAllowed == nil then
+        local isAllowed = false
+        local notify = ""
+
         if value.Permissions then
             local user <const> = Core.getUser(_source)
             if not user then return cb(false) end
 
-            local notify = ""
             local character <const> = user.getUsedCharacter
             local job <const> = character.job
             local grade <const> = character.jobGrade
 
-            if value.Permissions[job] == nil then
+            if not value.Permissions[job] then
                 notify = Config.lang.NotAllowed
+                isAllowed = false
             end
 
-            if grade < value.Permissions[job] then
-                notify = Config.lang.GradeNotalowed
+            if value.Permissions[job] then
+                if grade >= value.Permissions[job] then
+                    isAllowed = true
+                else
+                    notify = Config.lang.GradeNotalowed
+                    isAllowed = false
+                end
             end
 
-            -- if its valid then allow check if its char id allowed
-            if not value.UniquePermissions and notify ~= "" then
-                Core.NotifyObjective(_source, notify, 5000)
-                return cb(false)
+            if not value.UniquePermissions or not next(value.UniquePermissions) then
+                isAllowed = true
             end
         end
 
-        if value.UniquePermissions then
+        if value.UniquePermissions and not isAllowed then
             local charid <const> = Player(_source).state.Character.CharId
-            if value.UniquePermissions[charid] == nil then
-                Core.NotifyObjective(_source, "not allowed to open this door", 5000)
-                return cb(false)
+            if not value.UniquePermissions[charid] then
+                notify = "not allowed to open this door"
+                isAllowed = false
+            else
+                isAllowed = true
             end
+        end
+
+        if not isAllowed then
+            Core.NotifyObjective(_source, notify, 5000)
+            return cb(false)
         end
     end
 
@@ -117,7 +130,7 @@ CreateThread(function()
                 if lockpicking[data.source] then
                     lockpicking[data.source] = nil
                 end
-            end)
+            end, GetCurrentResourceName())
         end
     end
 end)
