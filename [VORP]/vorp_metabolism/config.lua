@@ -2,7 +2,7 @@ Config = {
   DevMode = false,
   Langs = "en",                        -- Set the language for your script (you can change this if you support multiple languages).
 
-  UseMetabolism = true,                -- Enable/disable metabolism system. If true, metabolism effects like stamina and hunger will affect players.
+  UseMetabolism = false,                -- Enable/disable metabolism system. If true, metabolism effects like stamina and hunger will affect players.
 
   EveryTimeStatusDown = 3600,          -- Time interval (in milliseconds) for status drop (3.6 seconds).
   HowAmountThirstWhileRunning = 3,     -- How much thirst decreases while running (value decreases every 3.6 seconds).

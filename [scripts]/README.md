@@ -10,6 +10,7 @@ Each script should be contained in its own folder and follow the VORP Core archi
 - Configuration in `config` folder
 - Language files in `translation` folder
 - Resource manifest in `fxmanifest.lua`
+- Author name 
 
 ## Development Guidelines
 
