@@ -17,7 +17,6 @@ Citizen.CreateThread(function()
     -- Initialize VORP inventory properly
     TriggerEvent("vorp_inventory:client:LoadInventory", function(inv)
         VORPinv = inv
-        print("SL Teleport: VORP inventory loaded successfully")
     end)
 end)
 
@@ -185,9 +184,6 @@ local teleportCooldown = 1000 -- 1 second cooldown between teleport attempts (ju
 
 -- Main loop for checking proximity to interaction point and displaying prompts
 Citizen.CreateThread(function()
-    print("SL Teleport: Script initialized")
-    print("Teleport point set at: " .. tostring(Config.TeleportPoint.position))
-    print("Destination set at: " .. tostring(Config.TeleportPoint.destination))
     
     while true do
         Citizen.Wait(0)
@@ -196,71 +192,10 @@ Citizen.CreateThread(function()
         local teleportDist = #(coords - Config.TeleportPoint.position)
         local dynamiteDist = #(coords - Config.Dynamite.placementPosition)
         
-        -- Debug markers at the configured positions
-        if Config.DebugMarker and teleportDist < 50.0 then
-            -- Teleport interaction point
-            Citizen.InvokeNative(0x2A32FAA57B937173, 0x6903B113, Config.TeleportPoint.position.x, Config.TeleportPoint.position.y, Config.TeleportPoint.position.z - 1.0, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.5, 255, 255, 0, 155, 0, 0, 2, 0, 0, 0, 0)
-            
-            -- Teleport destination
-            Citizen.InvokeNative(0x2A32FAA57B937173, 0x6903B113, Config.TeleportPoint.destination.x, Config.TeleportPoint.destination.y, Config.TeleportPoint.destination.z - 1.0, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.5, 0, 255, 0, 155, 0, 0, 2, 0, 0, 0, 0)
-            
-            -- Cell area boundaries
-            if Config.Teleport.insideCellCheck then
-                local cellCenter = Config.Teleport.cellArea.center
-                local halfWidth = Config.Teleport.cellArea.width / 2
-                local halfLength = Config.Teleport.cellArea.length / 2
-                local halfHeight = Config.Teleport.cellArea.height / 2
-                local rotation = Config.Teleport.cellArea.rotation or 0.0
-                
-                -- Convert rotation to radians
-                local rotRad = math.rad(rotation)
-                local cosRot = math.cos(rotRad)
-                local sinRot = math.sin(rotRad)
-                
-                -- Calculate corners with rotation
-                local corners = {
-                    -- Bottom corners
-                    { x = -halfWidth, y = -halfLength, z = -halfHeight },
-                    { x = halfWidth, y = -halfLength, z = -halfHeight },
-                    { x = halfWidth, y = halfLength, z = -halfHeight },
-                    { x = -halfWidth, y = halfLength, z = -halfHeight },
-                    -- Top corners
-                    { x = -halfWidth, y = -halfLength, z = halfHeight },
-                    { x = halfWidth, y = -halfLength, z = halfHeight },
-                    { x = halfWidth, y = halfLength, z = halfHeight },
-                    { x = -halfWidth, y = halfLength, z = halfHeight }
-                }
-                
-                -- Rotate and translate all corners
-                for i, corner in ipairs(corners) do
-                    -- Rotate
-                    local rotX = corner.x * cosRot - corner.y * sinRot
-                    local rotY = corner.x * sinRot + corner.y * cosRot
-                    
-                    -- Translate
-                    corners[i].worldX = cellCenter.x + rotX
-                    corners[i].worldY = cellCenter.y + rotY
-                    corners[i].worldZ = cellCenter.z + corner.z
-                end
-                
-                -- Draw lines for the rotated cell boundaries (bottom rectangle)
-                DrawLine(corners[1].worldX, corners[1].worldY, corners[1].worldZ, corners[2].worldX, corners[2].worldY, corners[2].worldZ, 255, 0, 0, 255)
-                DrawLine(corners[2].worldX, corners[2].worldY, corners[2].worldZ, corners[3].worldX, corners[3].worldY, corners[3].worldZ, 255, 0, 0, 255)
-                DrawLine(corners[3].worldX, corners[3].worldY, corners[3].worldZ, corners[4].worldX, corners[4].worldY, corners[4].worldZ, 255, 0, 0, 255)
-                DrawLine(corners[4].worldX, corners[4].worldY, corners[4].worldZ, corners[1].worldX, corners[1].worldY, corners[1].worldZ, 255, 0, 0, 255)
-                
-                -- Draw lines for the rotated cell boundaries (top rectangle)
-                DrawLine(corners[5].worldX, corners[5].worldY, corners[5].worldZ, corners[6].worldX, corners[6].worldY, corners[6].worldZ, 255, 0, 0, 255)
-                DrawLine(corners[6].worldX, corners[6].worldY, corners[6].worldZ, corners[7].worldX, corners[7].worldY, corners[7].worldZ, 255, 0, 0, 255)
-                DrawLine(corners[7].worldX, corners[7].worldY, corners[7].worldZ, corners[8].worldX, corners[8].worldY, corners[8].worldZ, 255, 0, 0, 255)
-                DrawLine(corners[8].worldX, corners[8].worldY, corners[8].worldZ, corners[5].worldX, corners[5].worldY, corners[5].worldZ, 255, 0, 0, 255)
-                
-                -- Connect top to bottom
-                DrawLine(corners[1].worldX, corners[1].worldY, corners[1].worldZ, corners[5].worldX, corners[5].worldY, corners[5].worldZ, 255, 0, 0, 255)
-                DrawLine(corners[2].worldX, corners[2].worldY, corners[2].worldZ, corners[6].worldX, corners[6].worldY, corners[6].worldZ, 255, 0, 0, 255)
-                DrawLine(corners[3].worldX, corners[3].worldY, corners[3].worldZ, corners[7].worldX, corners[7].worldY, corners[7].worldZ, 255, 0, 0, 255)
-                DrawLine(corners[4].worldX, corners[4].worldY, corners[4].worldZ, corners[8].worldX, corners[8].worldY, corners[8].worldZ, 255, 0, 0, 255)
-            end
+        -- Only draw the green teleport marker if teleport is enabled
+        if teleportEnabled and teleportDist < 50.0 then
+            -- Green teleport marker - keep this one
+            Citizen.InvokeNative(0x2A32FAA57B937173, 0x6903B113, Config.TeleportPoint.position.x, Config.TeleportPoint.position.y, Config.TeleportPoint.position.z - 0.5, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.5, 0, 255, 0, 155, 0, 0, 2, 0, 0, 0, 0)
         end
         
         -- First check: If teleport is not enabled, show dynamite placement prompt
@@ -271,10 +206,6 @@ Citizen.CreateThread(function()
                 -- Use the IsPlayerInsideCell function to check if player is inside
                 if IsPlayerInsideCell() then
                     canPlace = false
-                    -- Only show the message if player is close to the wall
-                    if dynamiteDist < 2.0 then
-                        DrawText3D(coords.x, coords.y, coords.z + 0.5, Config.Dynamite.notifications.insideCell)
-                    end
                 end
             end
             
@@ -321,9 +252,6 @@ Citizen.CreateThread(function()
                 if Config.Debug or true then -- Always draw marker for teleport point
                     Citizen.InvokeNative(0x2A32FAA57B937173, 0x6903B113, Config.TeleportPoint.position.x, Config.TeleportPoint.position.y, Config.TeleportPoint.position.z - 0.5, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.5, 0, 255, 0, 155, 0, 0, 2, 0, 0, 0, 0)
                 end
-                
-                -- Draw text to make it very clear
-                DrawText3D(Config.TeleportPoint.position.x, Config.TeleportPoint.position.y, Config.TeleportPoint.position.z + 0.5, "~g~Press E to escape")
                 
                 local promptText = CreateVarString(10, 'LITERAL_STRING', "Teleport Out")
                 PromptSetActiveGroupThisFrame(teleportPromptGroup, promptText)
@@ -419,16 +347,6 @@ function StartCountdown()
         while timeLeft > 0 do
             Citizen.Wait(1000)
             timeLeft = timeLeft - 1
-            
-            -- Display countdown text above dynamite
-            Citizen.CreateThread(function()
-                local endTime = GetGameTimer() + 1000
-                while GetGameTimer() < endTime do
-                    Citizen.Wait(0)
-                    local coords = GetEntityCoords(dynamiteObj)
-                    DrawText3D(coords.x, coords.y, coords.z + 0.5, string.format(Config.Dynamite.notifications.countdown, timeLeft))
-                end
-            end)
         end
         
         -- Trigger explosion when countdown reaches zero
@@ -555,12 +473,15 @@ end
 
 -- Handle cooldown check response
 RegisterNetEvent("sl_teleport:cooldownCheck")
-AddEventHandler("sl_teleport:cooldownCheck", function(isOnCooldown, type)
+AddEventHandler("sl_teleport:cooldownCheck", function(isOnCooldown, type, reason)
     if isOnCooldown then
-        if type == "dynamite" then
-            Notify(Config.Dynamite.notifications.cooldown)
-        else
-            Notify(Config.Teleport.notifications.cooldown)
+        -- Only show cooldown message if the reason is actually a cooldown
+        if reason == "cooldown" then
+            if type == "dynamite" then
+                Notify(Config.Dynamite.notifications.cooldown)
+            else
+                Notify(Config.Teleport.notifications.cooldown)
+            end
         end
         
         -- Release the appropriate lock based on type
@@ -614,22 +535,8 @@ AddEventHandler("sl_teleport:explosionEffect", function(coords)
     -- Enable teleport option
     teleportEnabled = true
     
-    -- Notify player that teleport is available
-    Notify("The wall has been damaged! You can now escape!")
-    
     -- Save teleport state to server
     TriggerServerEvent("sl_teleport:saveTeleportState", true)
-    
-    -- Force create a small notification on screen to draw attention
-    local playerPed = PlayerPedId()
-    local coords = GetEntityCoords(playerPed)
-    Citizen.CreateThread(function()
-        local startTime = GetGameTimer()
-        while GetGameTimer() - startTime < 10000 do -- Show for 10 seconds
-            Citizen.Wait(0)
-            DrawText3D(coords.x, coords.y, coords.z + 1.0, "~y~Press E to escape!")
-        end
-    end)
     
     -- Start the timer to disable teleport after the configured time
     Citizen.CreateThread(function()

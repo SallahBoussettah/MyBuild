@@ -37,30 +37,19 @@ AddEventHandler("sl_teleport:checkCooldown", function(type)
         -- First check if player has dynamite before proceeding
         local hasDynamite = VORPinv.getItemCount(_source, Config.Dynamite.itemName) > 0
         
-        -- Debug info
-        if Config.Debug then
-            Debug("Player " .. _source .. " dynamite check: " .. tostring(hasDynamite) .. ", cooldown: " .. tostring(dynamiteCooldownActive))
-        end
-        
         -- If player doesn't have dynamite, don't proceed regardless of cooldown
         if not hasDynamite then
-            TriggerClientEvent("sl_teleport:cooldownCheck", _source, true, type) -- Use cooldown response to block action
+            TriggerClientEvent("sl_teleport:cooldownCheck", _source, true, type, "no_item") -- Add reason parameter "no_item"
             TriggerClientEvent("vorp:NotifyLeft", _source, "No Dynamite", "You don't have any dynamite", "generic_textures", "cross", 4000)
             return
         end
         
         -- Only if player has dynamite, check the actual cooldown
-        TriggerClientEvent("sl_teleport:cooldownCheck", _source, dynamiteCooldownActive, type)
+        TriggerClientEvent("sl_teleport:cooldownCheck", _source, dynamiteCooldownActive, type, "cooldown") -- Add reason parameter "cooldown"
     else
         -- For teleporting, never use cooldown - always allow if teleport is enabled
         local isOnCooldown = false -- Never apply cooldown to teleporting
-        
-        -- Debug the teleport state
-        if Config.Debug then
-            Debug("Teleport check: teleportEnabled = " .. tostring(teleportEnabled) .. ", isOnCooldown = " .. tostring(isOnCooldown))
-        end
-        
-        TriggerClientEvent("sl_teleport:cooldownCheck", _source, isOnCooldown, type)
+        TriggerClientEvent("sl_teleport:cooldownCheck", _source, isOnCooldown, type, "cooldown") -- Add reason parameter "cooldown"
     end
 end)
 
@@ -102,18 +91,13 @@ AddEventHandler("sl_teleport:explode", function(coords)
     Citizen.CreateThread(function()
         Citizen.Wait(Config.TeleportActiveTime * 1000)
         teleportEnabled = false
-        Debug("Teleport option has expired")
     end)
     
     -- Set a timer to reset the dynamite cooldown
     Citizen.CreateThread(function()
         Citizen.Wait(Config.Dynamite.cooldownTime * 1000)
         dynamiteCooldownActive = false
-        Debug("Dynamite cooldown has ended")
     end)
-    
-    -- Log the event
-    Debug("Explosion triggered by player " .. _source)
 end)
 
 -- Alert law enforcement for teleport
@@ -198,7 +182,6 @@ AddEventHandler("sl_teleport:saveTeleportState", function(state)
     }
     
     SaveResourceFile(GetCurrentResourceName(), "teleport_state.json", json.encode(data), -1)
-    Debug("Teleport state updated: " .. tostring(state))
 end)
 
 -- Save the teleport state on resource stop
@@ -234,7 +217,6 @@ AddEventHandler('onResourceStart', function(resourceName)
             teleportEnabled = data.teleportEnabled
             -- Notify all clients of the current state
             TriggerClientEvent("sl_teleport:setTeleportState", -1, teleportEnabled)
-            Debug("Loaded teleport state from file: " .. tostring(teleportEnabled))
         end
         
         if data and data.explosionTime then
@@ -248,7 +230,6 @@ AddEventHandler('onResourceStart', function(resourceName)
                 -- Set a timer for the remaining teleport active time
                 Citizen.CreateThread(function()
                     local remainingTime = Config.TeleportActiveTime - elapsedSinceExplosion
-                    Debug("Resuming teleport active state with " .. remainingTime .. " seconds remaining")
                     
                     -- Notify all clients
                     TriggerClientEvent("sl_teleport:setTeleportState", -1, true)
@@ -256,7 +237,6 @@ AddEventHandler('onResourceStart', function(resourceName)
                     Citizen.Wait(remainingTime * 1000)
                     teleportEnabled = false
                     TriggerClientEvent("sl_teleport:setTeleportState", -1, false)
-                    Debug("Teleport option has expired")
                 end)
             end
             
@@ -267,7 +247,6 @@ AddEventHandler('onResourceStart', function(resourceName)
                 -- Set a timer for the remaining cooldown
                 Citizen.CreateThread(function()
                     local remainingTime = Config.Dynamite.cooldownTime - elapsedSinceExplosion
-                    Debug("Resuming dynamite cooldown with " .. remainingTime .. " seconds remaining")
                     
                     -- Notify all clients
                     TriggerClientEvent("sl_teleport:setCooldown", -1, true)
@@ -275,7 +254,6 @@ AddEventHandler('onResourceStart', function(resourceName)
                     Citizen.Wait(remainingTime * 1000)
                     dynamiteCooldownActive = false
                     TriggerClientEvent("sl_teleport:setCooldown", -1, false)
-                    Debug("Dynamite cooldown has ended")
                 end)
             end
         end
