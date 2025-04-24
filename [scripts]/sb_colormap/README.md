@@ -8,6 +8,7 @@ A RedM resource that applies custom colors to map regions, making different terr
 - Ability to create custom family or gang territories
 - **NEW: Custom map overlays that blend with the map like region coloring**
 - **NEW: Special family blip icons (like revolvers) for territory centers**
+- **NEW: Territory notifications when entering/exiting family territories**
 - Custom-sized circular area blips you can place anywhere on the map
 - Easy configuration through the config.lua file
 - Clean code with proper cleanup when the resource stops
@@ -140,12 +141,53 @@ if overlay.name == "Your Family Territory Name" then
 end
 ```
 
+## Territory Notifications
+
+The script now includes a notification system for family territories, similar to vorp_zonenotify. When players enter or exit a territory, they will receive a notification showing which family's territory they're entering/leaving.
+
+### Configuration
+
+You can customize the territory notification system in the config.lua file:
+
+```lua
+Config.TerritoryNotify = {
+    Enabled = true,                   -- Enable/disable territory notifications
+    NotificationDuration = 4000,      -- How long notifications show for (in ms)
+    ShowOnlyOnce = true,              -- Only notify when entering a new territory
+    CooldownTimer = 30000,            -- Time before showing the same territory notification again (in ms)
+    EnterMessage = "Entering",        -- Message shown when entering a territory
+    ExitMessage = "Leaving",          -- Message shown when exiting a territory
+    ShowExitNotification = true,      -- Show notification when leaving a territory
+    NotificationStyle = "top",        -- Options: "top" (vorp:NotifyTop) or "right" (vorp:Tip)
+    
+    -- Notification colors for different territory types
+    Colors = {
+        Default = "~COLOR_WHITE~",    -- Default color for territories
+        Pincertens = "~COLOR_RED~",   -- Specific color for Pincertens family
+        -- Add more family-specific colors here
+    }
+}
+```
+
+### Adding New Family Colors
+
+To add color for a specific family's notifications:
+
+1. Add an entry to the `Colors` table in the `Config.TerritoryNotify` section
+2. The key should match part of the family's territory name
+3. The value should be a RedM color code (like `~COLOR_RED~`)
+
+### Commands
+
+- `/checkterritory` - Manually check if you're in a family territory
+
 ## Useful Commands
 
 - `/getregionhash` - Get information about the region you're currently in
 - `/getcoords` - Get your current coordinates for creating custom area blips
 - `/listterritories` - List all configured family territories in the console
 - `/listareas` - List all custom areas in the console
+- `/checkterritory` - Check if you're currently in a family territory
 
 ## Known Limitations
 
@@ -155,9 +197,4 @@ end
 
 ## Credits
 
-- Original script by Darky_13
-- Enhanced with family territory support and custom areas by Salah
-
-## License
-
-This resource is released under the MIT License.
+- By Salah

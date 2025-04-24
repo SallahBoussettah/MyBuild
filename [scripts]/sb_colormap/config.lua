@@ -301,4 +301,26 @@ Config.MapOverlayStyles = {
     "BLIP_STYLE_FM_EVENT",         -- Light purple
     "BLIP_STYLE_COP_PERSISTENT",   -- Blue/grey
     -- Add more as needed
+}
+
+-- Territory Notification Settings
+Config.TerritoryNotify = {
+    Enabled = true,                   -- Enable/disable territory notifications
+    NotificationDuration = 4000,      -- How long notifications show for (in ms)
+    ShowOnlyOnce = true,              -- Only notify when entering a new territory
+    CooldownTimer = 30000,            -- Time before showing the same territory notification again (in ms)
+    EnterMessage = "Entering",        -- Message shown when entering a territory
+    ExitMessage = "Leaving",          -- Message shown when exiting a territory (if ShowExitNotification is true)
+    ShowExitNotification = true,      -- Show notification when leaving a territory
+    NotificationStyle = "top",        -- Options: "top" (vorp:NotifyTop) or "right" (vorp:Tip)
+    
+    -- Notification colors for different territory types
+    Colors = {
+        Default = "~COLOR_WHITE~",             -- Default color for territories
+        Pincertens = "~COLOR_RED~",            -- Specific color for Pincertens family
+        -- Add more family-specific colors here
+    },
+    
+    -- Debug mode for testing
+    Debug = false
 } 

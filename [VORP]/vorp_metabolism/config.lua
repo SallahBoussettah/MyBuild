@@ -4,13 +4,29 @@ Config = {
 
   UseMetabolism = false,                -- Enable/disable metabolism system. If true, metabolism effects like stamina and hunger will affect players.
 
+  -- EveryTimeStatusDown = 3600,          -- Time interval (in milliseconds) for status drop (3.6 seconds).
+  -- HowAmountThirstWhileRunning = 3,     -- How much thirst decreases while running (value decreases every 3.6 seconds).
+  -- HowAmountHungerWhileRunning = 2,     -- How much hunger decreases while running.
+  -- HowAmountThirst = 2,                 -- How much thirst decreases while not running (idle state).
+  -- HowAmountHunger = 1,                 -- How much hunger decreases while not running (idle state).
+  -- HowAmountMetabolismWhileRunning = 4, -- How much metabolism decreases while running.
+  -- HowAmountMetabolism = 2,             -- How much metabolism decreases while not running (idle state).
+
+  -- FirstHungerStatus = 1000,            -- Starting value for hunger (1000 is full).
+  -- FirstThirstStatus = 1000,            -- Starting value for thirst (1000 is full).
+
+  -- OnRespawnHungerStatus = 1000,        -- Hunger resets to full upon respawn.
+  -- OnRespawnThirstStatus = 1000,        -- Thirst resets to full upon respawn.
+
+  -- FirstMetabolismStatus = 0,           -- Initial metabolism status (0 means no change initially).
+
   EveryTimeStatusDown = 3600,          -- Time interval (in milliseconds) for status drop (3.6 seconds).
-  HowAmountThirstWhileRunning = 3,     -- How much thirst decreases while running (value decreases every 3.6 seconds).
-  HowAmountHungerWhileRunning = 2,     -- How much hunger decreases while running.
-  HowAmountThirst = 2,                 -- How much thirst decreases while not running (idle state).
-  HowAmountHunger = 1,                 -- How much hunger decreases while not running (idle state).
-  HowAmountMetabolismWhileRunning = 4, -- How much metabolism decreases while running.
-  HowAmountMetabolism = 2,             -- How much metabolism decreases while not running (idle state).
+  HowAmountThirstWhileRunning = 0,     -- How much thirst decreases while running (value decreases every 3.6 seconds).
+  HowAmountHungerWhileRunning = 0,     -- How much hunger decreases while running.
+  HowAmountThirst = 0,                 -- How much thirst decreases while not running (idle state).
+  HowAmountHunger = 0,                 -- How much hunger decreases while not running (idle state).
+  HowAmountMetabolismWhileRunning = 0, -- How much metabolism decreases while running.
+  HowAmountMetabolism = 0,             -- How much metabolism decreases while not running (idle state).
 
   FirstHungerStatus = 1000,            -- Starting value for hunger (1000 is full).
   FirstThirstStatus = 1000,            -- Starting value for thirst (1000 is full).
