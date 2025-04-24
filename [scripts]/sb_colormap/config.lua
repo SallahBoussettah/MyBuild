@@ -161,3 +161,144 @@ Config.ColorMap = {
 		color = "BLIP_STYLE_DEBUG_GREEN",
     }
 } 
+
+-- Custom Family Territories
+-- Add your family territories here with their region hashes
+-- Format: FAMILY_NAME = { hash = regionHash, color = "COLOR_NAME", label = "Family Name" }
+Config.FamilyTerritories = {
+    -- Example family territories (you can modify or remove these)
+    EXAMPLE_FAMILY_VALENTINE = {
+        hash = 0x724E7654, -- This is the DISTRICT_HEARTLAND hash (Valentine area)
+        color = "BLIP_STYLE_ADVERSARY",
+        label = "Valentine Outlaws"
+    },
+    EXAMPLE_FAMILY_RHODES = {
+        hash = 0xD3F2B8A7, -- This is the RHODES area hash
+        color = "BLIP_STYLE_MP_MISSION_GIVER",
+        label = "Rhodes Gang"
+    },
+    -- Add more family territories as needed
+}
+
+-- Available region hashes reference
+-- This table is for reference only - it shows the hash for many regions
+-- To find more region hashes, you can use a helper script or research online
+Config.RegionHashReference = {
+    -- States
+    STATE_AMBARINO = 0x3B8DD21A,
+    STATE_LEMOYNE = 0x945395DF,
+    STATE_NEW_AUSTIN = 0x41759831,
+    STATE_NEW_HANOVER = 0x41332496,
+    STATE_WEST_ELIZABETH = 0xD69B5B49,
+    
+    -- Towns and settlements
+    TOWN_VALENTINE = 0x0A355D78, 
+    TOWN_RHODES = 0x94532B8C,
+    TOWN_STRAWBERRY = 0xCF6D9801,
+    TOWN_SAINT_DENIS = 0x6437ACFE,
+    TOWN_BLACKWATER = 0xBC581A5C,
+    TOWN_ARMADILLO = 0x0EE1A2FF,
+    TOWN_TUMBLEWEED = 0xD401A84E,
+    TOWN_ANNESBURG = 0x19486A19,
+    SETTLEMENT_LAGRAS = 0xD3F276D1,
+    SETTLEMENT_MANZANITA_POST = 0x7B23B4C7,
+    
+    -- Add more as you discover them
+}
+
+-- BLIP STYLE COLORS for reference
+Config.AvailableColors = {
+    -- Standard colors
+    "BLIP_STYLE_DEBUG_RED",
+    "BLIP_STYLE_DEBUG_GREEN",
+    "BLIP_STYLE_DEBUG_BLUE",
+    "BLIP_STYLE_DEBUG_YELLOW",
+    
+    -- Special styles
+    "BLIP_STYLE_ADVERSARY",          -- Purple
+    "BLIP_STYLE_AREA_BOUNDS",        -- Light blue outline
+    "BLIP_STYLE_AREA_BOUNDS_OVERLAY", -- Shaded overlay
+    "BLIP_STYLE_COP_PERSISTENT",     -- Blue/grey
+    "BLIP_STYLE_FM_EVENT",           -- Light purple
+    "BLIP_STYLE_MP_MISSION_GIVER",   -- Orange
+    "BLIP_STYLE_MP_ADVERSARY",       -- Red
+    "BLIP_STYLE_AMBIENT_LOCATION",   -- White
+    "BLIP_STYLE_FRIENDLY",           -- Light green
+    
+    -- Add more as needed
+} 
+
+-- Custom Area Blips
+-- These are circular areas you can place anywhere on the map
+-- Unlike region coloring, these let you define custom-sized areas with specific colors
+Config.CustomAreaBlips = {
+    -- Example custom areas (modify or remove these)
+    {
+        name = "Valentine Gang Territory",
+        x = -284.28,      -- X coordinate
+        y = 804.92,       -- Y coordinate
+        radius = 100.0,   -- Size of the area in meters
+        color = 6,        -- Color ID: 1=White, 2=Yellow, 3=Purple, 5=Blue, 6=Pink, 7=Red, 10=Green, etc.
+        alpha = 128,      -- Transparency (0-255)
+        highDetail = true, -- Higher quality circle
+        visible = true    -- Whether the area is visible on the map
+    },
+    {
+        name = "Saint Denis Territory",
+        x = 2732.25,
+        y = -1402.14,
+        radius = 150.0,
+        color = 10,       -- Green
+        alpha = 100,
+        highDetail = true,
+        visible = true
+    },
+    -- Add more custom areas as needed
+}
+
+-- Custom Map Overlay Zones
+-- These are more subtle area highlights that blend with the map better,
+-- similar to the region coloring but for custom areas
+Config.CustomMapOverlays = {
+    -- Example overlay areas (modify or remove these)
+    {
+        name = "Valentine Family Zone",
+        x = -284.28,        -- X coordinate
+        y = 804.92,         -- Y coordinate
+        radius = 100.0,     -- Size of the area in meters
+        style = "BLIP_STYLE_AREA_BOUNDS_OVERLAY", -- Style matches the region coloring
+        visible = true      -- Whether the area is visible on the map
+    },
+    {
+        name = "Saint Denis Family Zone",
+        x = 2732.25,
+        y = -1402.14,
+        radius = 150.0,
+        style = "BLIP_STYLE_DEBUG_GREEN", -- Green tint that matches region coloring
+        visible = true
+    },
+    -- Pincertens family territory from the screenshot
+    {
+        name = "Pincertens Family Territory",
+        x = 1088.90,        -- X coordinate from screenshot
+        y = -747.66,         -- Y coordinate from screenshot 
+        radius = 150.0,     -- Size of the area in meters
+        style = "BLIP_STYLE_DEBUG_RED", -- Red tint for their territory
+        visible = true      -- Whether the area is visible on the map
+    },
+    -- Add more custom overlay areas as needed
+}
+
+-- Map overlay styling reference
+Config.MapOverlayStyles = {
+    -- These styles will blend with the map more naturally like the region coloring
+    "BLIP_STYLE_DEBUG_GREEN",      -- Green tint
+    "BLIP_STYLE_DEBUG_RED",        -- Red tint
+    "BLIP_STYLE_DEBUG_BLUE",       -- Blue tint 
+    "BLIP_STYLE_DEBUG_YELLOW",     -- Yellow tint
+    "BLIP_STYLE_AREA_BOUNDS",      -- Light blue outline
+    "BLIP_STYLE_AREA_BOUNDS_OVERLAY", -- Light shadow overlay (most subtle)
+    "BLIP_STYLE_FM_EVENT",         -- Light purple
+    "BLIP_STYLE_COP_PERSISTENT",   -- Blue/grey
+    -- Add more as needed
+} 

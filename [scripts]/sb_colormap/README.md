@@ -1,13 +1,18 @@
 # SB ColorMap
 
-A RedM resource that applies custom colors to map regions, making different territories easily distinguishable.
+A RedM resource that applies custom colors to map regions, making different territories easily distinguishable. Perfect for marking family territories, gang areas, or administrative zones.
 
 ## Features
 
 - Custom colors for all major regions in the RedM map
+- Ability to create custom family or gang territories
+- **NEW: Custom map overlays that blend with the map like region coloring**
+- **NEW: Special family blip icons (like revolvers) for territory centers**
+- Custom-sized circular area blips you can place anywhere on the map
 - Easy configuration through the config.lua file
 - Clean code with proper cleanup when the resource stops
 - No dependencies - works with any framework
+- Includes helpful commands for identifying region hashes and coordinates
 
 ## Installation
 
@@ -29,23 +34,130 @@ Config.ColorMap = {
 }
 ```
 
-### Available Colors
+## Creating Custom Family Territories
 
-Some common color options include:
-- BLIP_STYLE_DEBUG_RED
-- BLIP_STYLE_DEBUG_GREEN
-- BLIP_STYLE_DEBUG_BLUE
-- BLIP_STYLE_DEBUG_YELLOW
-- BLIP_STYLE_AREA_BOUNDS
-- BLIP_STYLE_AREA_BOUNDS_OVERLAY
-- BLIP_STYLE_FM_EVENT
-- BLIP_STYLE_COP_PERSISTENT
+### Method 1: Use the Reference Table
+1. Find a suitable region hash in the `Config.RegionHashReference` table in the config file
+2. Add a new entry to the `Config.FamilyTerritories` table with your desired color and label
+
+```lua
+Config.FamilyTerritories = {
+    MY_FAMILY_NAME = {
+        hash = 0x0A355D78, -- TOWN_VALENTINE hash from the reference table
+        color = "BLIP_STYLE_ADVERSARY", -- Purple color
+        label = "My Family Territory"
+    },
+    -- Add more as needed
+}
+```
+
+### Method 2: Using Commands
+1. In-game, go to the location you want to color
+2. Use the command `/getregionhash` to get region information
+3. Check your F8 console for instructions
+4. Add the appropriate hash to your `Config.FamilyTerritories` section in the config
+5. Restart the script with `/restart sb_colormap`
+
+## Creating Custom Map Overlays (Recommended)
+
+These custom map overlays appear like the region colors, blending with the map for a seamless look. **This is the recommended way to create custom territories that match the style in your screenshot.** 
+
+1. Go to the location where you want to create your custom area
+2. Use the command `/getcoords` to get your current coordinates
+3. Add a new entry to the `Config.CustomMapOverlays` table:
+
+```lua
+Config.CustomMapOverlays = {
+    {
+        name = "My Family Territory",
+        x = -284.28,        -- X coordinate (from /getcoords)
+        y = 804.92,         -- Y coordinate (from /getcoords)
+        radius = 100.0,     -- Size of the area in meters (adjust as needed)
+        style = "BLIP_STYLE_DEBUG_GREEN", -- Matches the original region coloring style
+        visible = true      -- Whether the area is visible on the map
+    },
+    -- Add more as needed
+}
+```
+
+### Available Styles for Map Overlays
+The following styles match the original region coloring and will blend with the map:
+
+- `BLIP_STYLE_DEBUG_GREEN` - Green tint (like in your screenshot)
+- `BLIP_STYLE_DEBUG_RED` - Red tint
+- `BLIP_STYLE_DEBUG_BLUE` - Blue tint 
+- `BLIP_STYLE_DEBUG_YELLOW` - Yellow tint
+- `BLIP_STYLE_AREA_BOUNDS` - Light blue outline
+- `BLIP_STYLE_AREA_BOUNDS_OVERLAY` - Light shadow overlay (most subtle)
+- `BLIP_STYLE_FM_EVENT` - Light purple
+- `BLIP_STYLE_COP_PERSISTENT` - Blue/grey
+
+## Alternative: Creating Custom Area Blips
+
+For more visible territory markers, you can also use the regular circular blips, though these don't blend as well with the map:
+
+```lua
+Config.CustomAreaBlips = {
+    {
+        name = "My Gang Territory",
+        x = -284.28,      -- X coordinate (from /getcoords)
+        y = 804.92,       -- Y coordinate (from /getcoords)
+        radius = 100.0,   -- Size of the area in meters
+        color = 7,        -- Color ID: 7=Red, 10=Green, etc.
+        alpha = 128,      -- Transparency (0-255)
+        highDetail = true, -- Higher quality circle
+        visible = true    -- Whether the area is visible on the map
+    },
+    -- Add more as needed
+}
+```
+
+## Adding Special Blip Icons for Families
+
+The script now includes support for adding special blip icons (like a revolver) for family territories. This is currently implemented for the Pincertens family, and you can extend it for other families by modifying the client.lua file:
+
+```lua
+-- Look for this code in the client.lua file and adapt it for other families
+if overlay.name == "Your Family Territory Name" then
+    -- Create a custom blip at the center of their territory
+    local customBlip = Citizen.InvokeNative(0x554D9D53F696D002, 1664425300, overlay.x, overlay.y, 0)
+    
+    -- Set blip sprite to a specific icon
+    -- Some useful sprite hashes:
+    -- 669307703: Revolver
+    -- 1322310532: Skull
+    -- 1681904975: Star
+    Citizen.InvokeNative(0x74F74D3207ED525C, customBlip, 669307703, 1) 
+    
+    -- Set blip color
+    Citizen.InvokeNative(0x662D364ABF16DE2F, customBlip, 0xFF0000) -- Red color
+    
+    -- Add name to the blip
+    Citizen.InvokeNative(0x9CB1A1623062F402, customBlip, "Your Family Name")
+    
+    -- Store for cleanup
+    table.insert(customBlips, customBlip)
+end
+```
+
+## Useful Commands
+
+- `/getregionhash` - Get information about the region you're currently in
+- `/getcoords` - Get your current coordinates for creating custom area blips
+- `/listterritories` - List all configured family territories in the console
+- `/listareas` - List all custom areas in the console
+
+## Known Limitations
+
+- RedM only allows coloring predefined regions - you cannot create entirely custom-shaped colored areas
+- Region hashes cannot be directly determined in-game, so you need to use the reference table
+- Custom areas are circular only - complex shapes are not supported
 
 ## Credits
 
 - Original script by Darky_13
-- Integrated into VORP framework by Salah
+- Enhanced with family territory support and custom areas by Salah
 
 ## License
 
-This resource is released under the MIT License. 
+This resource is released under the MIT License.
