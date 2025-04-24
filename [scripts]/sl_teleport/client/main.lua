@@ -280,35 +280,35 @@ Citizen.CreateThread(function()
             
             -- Only show prompt and allow placement if player is outside the cell (when required)
             if canPlace then
-                local promptText = CreateVarString(10, 'LITERAL_STRING', "Jail Wall")
-                PromptSetActiveGroupThisFrame(dynamitePromptGroup, promptText)
+            local promptText = CreateVarString(10, 'LITERAL_STRING', "Jail Wall")
+            PromptSetActiveGroupThisFrame(dynamitePromptGroup, promptText)
+            
+            -- Check for key press with placement lock to prevent spamming
+            if PromptHasHoldModeCompleted(placeDynamitePrompt) and not placementLock then
+                local currentTime = GetGameTimer()
                 
-                -- Check for key press with placement lock to prevent spamming
-                if PromptHasHoldModeCompleted(placeDynamitePrompt) and not placementLock then
-                    local currentTime = GetGameTimer()
+                -- Only allow placement if cooldown has passed
+                if currentTime - lastPlacementTime > placementCooldown then
+                    lastPlacementTime = currentTime
+                    placementLock = true -- Lock placement until the current attempt is resolved
                     
-                    -- Only allow placement if cooldown has passed
-                    if currentTime - lastPlacementTime > placementCooldown then
-                        lastPlacementTime = currentTime
-                        placementLock = true -- Lock placement until the current attempt is resolved
-                        
-                        if HasDynamite() then
-                            TriggerServerEvent("sl_teleport:checkCooldown", "dynamite")
-                        else
-                            Notify(Config.Dynamite.notifications.noItem)
-                            -- Release the lock after a short delay if no dynamite
-                            Citizen.SetTimeout(500, function()
-                                placementLock = false
-                            end)
-                        end
+                    if HasDynamite() then
+                        TriggerServerEvent("sl_teleport:checkCooldown", "dynamite")
+                    else
+                        Notify(Config.Dynamite.notifications.noItem)
+                        -- Release the lock after a short delay if no dynamite
+                        Citizen.SetTimeout(500, function()
+                            placementLock = false
+                        end)
                     end
                 end
-                
-                -- Reset placement lock if player is no longer holding the prompt
-                if not PromptIsHoldModeRunning(placeDynamitePrompt) and placementLock then
-                    Citizen.SetTimeout(500, function()
-                        placementLock = false
-                    end)
+            end
+            
+            -- Reset placement lock if player is no longer holding the prompt
+            if not PromptIsHoldModeRunning(placeDynamitePrompt) and placementLock then
+                Citizen.SetTimeout(500, function()
+                    placementLock = false
+                end)
                 end
             end
         end
@@ -526,16 +526,16 @@ function DoTeleport()
     
     -- Reset teleport flags
     Citizen.SetTimeout(1000, function()
-        teleportActive = false
-        teleportLock = false
-        
+    teleportActive = false
+    teleportLock = false
+    
         -- Final notification
-        Notify(Config.Teleport.notifications.teleported)
-        
-        -- Alert law enforcement if enabled
-        if Config.Alerts.enabled then
-            TriggerServerEvent("sl_teleport:alertLaw", GetEntityCoords(playerPed))
-        end
+    Notify(Config.Teleport.notifications.teleported)
+    
+    -- Alert law enforcement if enabled
+    if Config.Alerts.enabled then
+        TriggerServerEvent("sl_teleport:alertLaw", GetEntityCoords(playerPed))
+    end
     end)
     
     -- Activate cooldown
@@ -598,7 +598,7 @@ AddEventHandler("sl_teleport:explosionEffect", function(coords)
         end
     else
         -- Regular explosion for players outside the cell
-        AddExplosion(coords.x, coords.y, coords.z, 23, 5.0, true, false, true)
+    AddExplosion(coords.x, coords.y, coords.z, 23, 5.0, true, false, true)
     end
     
     -- Delete the dynamite object
@@ -817,7 +817,7 @@ end)
 RegisterNetEvent("sl_teleport:notAdmin")
 AddEventHandler("sl_teleport:notAdmin", function()
     TriggerEvent("vorp:TipBottom", Config.Texts.NoPermission, 3000)
-end)
+end) 
 
 -- Add an emergency teleport for debug purposes (LEFT ALT + F)
 Citizen.CreateThread(function()
