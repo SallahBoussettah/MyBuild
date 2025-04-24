@@ -19,21 +19,15 @@
 4. Configure what you want in the config file.
 5. Start the resource and it's ready !
 
-### 🔧 DOCUMENTATION
-
-> https://rs-dev.gitbook.io/
 
 ### 📈 INFO.
 
-Requirements  | [STANDALONE]
-Support	      | [Discord](https://discord.gg/UsjAnRv48u)
-Store	        | [Tebex](https://script.redstartrp.fr/)
 Version	      | [1.0]
 
 
 ### © COPYRIGHT.
 
-Powered & Copyrighted by [©StitProd]
+Powered & Copyrighted by [©Salah]
 ©REDSTART
 ©RS DEVELOPMENT
 ©RS DEV
