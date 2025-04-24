@@ -70,14 +70,40 @@ AddEventHandler("sl_teleport:explode", function(coords)
     end
     
     -- Alert law enforcement
+    local officersAlerted = 0
+    local maxOfficersToAlert = 4 -- Number of closest officers to alert (matching VORP doorlocks config)
+    local officerDistances = {}
+    
+    -- Find all on-duty police officers
     for _, player in ipairs(players) do
-        local character = VORPcore.getUser(player).getUsedCharacter
-        if character then
-            -- Check if player is law enforcement (you may need to adapt this to your job system)
-            local job = character.job
-            if job == "sheriff" or job == "police" or job == "marshal" then
-                TriggerClientEvent("sl_teleport:alertLaw", player, coords)
-            end
+        -- Check if player is police and on duty (using VORP police state system)
+        if Player(tonumber(player)).state.isPoliceDuty then
+            local officerCoords = GetEntityCoords(GetPlayerPed(tonumber(player)))
+            local distance = #(coords - officerCoords)
+            table.insert(officerDistances, { id = player, distance = distance })
+        end
+    end
+    
+    -- Sort officers by distance
+    if #officerDistances > 0 then
+        table.sort(officerDistances, function(a, b) return a.distance < b.distance end)
+        
+        -- Alert the closest officers (up to maxOfficersToAlert)
+        for i = 1, math.min(maxOfficersToAlert, #officerDistances) do
+            local officer = officerDistances[i]
+            -- Create blip and notification for each officer
+            TriggerClientEvent("vorp_police:Client:AlertPolice", tonumber(officer.id), coords)
+            
+            -- Send custom notification
+            TriggerClientEvent("vorp:NotifyLeft", tonumber(officer.id), 
+                "Explosion Alert", 
+                "Explosion detected at Strawberry Jail! Possible break attempt.", 
+                "inventory_items", 
+                "provision_sheriff_star", 
+                8000, 
+                "COLOR_RED")
+                
+            officersAlerted = officersAlerted + 1
         end
     end
     
@@ -98,6 +124,11 @@ AddEventHandler("sl_teleport:explode", function(coords)
         Citizen.Wait(Config.Dynamite.cooldownTime * 1000)
         dynamiteCooldownActive = false
     end)
+    
+    -- Log the event
+    if Config.Debug then
+        Debug("Explosion triggered by player " .. _source .. " - " .. officersAlerted .. " officers alerted")
+    end
 end)
 
 -- Alert law enforcement for teleport
@@ -105,16 +136,42 @@ RegisterServerEvent("sl_teleport:alertLaw")
 AddEventHandler("sl_teleport:alertLaw", function(coords)
     local _source = source
     
-    -- Notify law enforcement players about the teleport
+    -- Get all online players
     local players = GetPlayers()
+    local officersAlerted = 0
+    local maxOfficersToAlert = 4 -- Number of closest officers to alert (matching VORP doorlocks config)
+    local officerDistances = {}
+    
+    -- Find all on-duty police officers
     for _, player in ipairs(players) do
-        local character = VORPcore.getUser(player).getUsedCharacter
-        if character then
-            -- Check if player is law enforcement (you may need to adapt this to your job system)
-            local job = character.job
-            if job == "sheriff" or job == "police" or job == "marshal" then
-                TriggerClientEvent("sl_teleport:alertLaw", player, coords)
-            end
+        -- Check if player is police and on duty (using VORP police state system)
+        if Player(tonumber(player)).state.isPoliceDuty then
+            local officerCoords = GetEntityCoords(GetPlayerPed(tonumber(player)))
+            local distance = #(coords - officerCoords)
+            table.insert(officerDistances, { id = player, distance = distance })
+        end
+    end
+    
+    -- Sort officers by distance
+    if #officerDistances > 0 then
+        table.sort(officerDistances, function(a, b) return a.distance < b.distance end)
+        
+        -- Alert the closest officers (up to maxOfficersToAlert)
+        for i = 1, math.min(maxOfficersToAlert, #officerDistances) do
+            local officer = officerDistances[i]
+            -- Create blip and notification for each officer
+            TriggerClientEvent("vorp_police:Client:AlertPolice", tonumber(officer.id), coords)
+            
+            -- Send custom notification
+            TriggerClientEvent("vorp:NotifyLeft", tonumber(officer.id), 
+                "Prison Break Alert", 
+                "Prison break in progress at Strawberry Jail!", 
+                "inventory_items", 
+                "provision_sheriff_star", 
+                8000, 
+                "COLOR_RED")
+                
+            officersAlerted = officersAlerted + 1
         end
     end
     
@@ -122,7 +179,9 @@ AddEventHandler("sl_teleport:alertLaw", function(coords)
     lastTeleportTime = os.time()
     
     -- Log the event
-    Debug("Prison teleport used by player " .. _source)
+    if Config.Debug then
+        Debug("Prison teleport used by player " .. _source .. " - " .. officersAlerted .. " officers alerted")
+    end
 end)
 
 -- Admin command to check if player is admin and reset cooldown/teleport

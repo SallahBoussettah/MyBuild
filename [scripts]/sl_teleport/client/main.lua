@@ -589,22 +589,8 @@ end)
 -- Create alert for nearby law enforcement
 RegisterNetEvent("sl_teleport:alertLaw")
 AddEventHandler("sl_teleport:alertLaw", function(coords)
-    -- Create a blip at the jail break location
-    local blip = Citizen.InvokeNative(0x554D9D53F696D002, 1664425300, coords.x, coords.y, coords.z)
-    Citizen.InvokeNative(0x74F74D3207ED525C, blip, Config.Alerts.blip.sprite, 1)
-    Citizen.InvokeNative(0x662D364ABF16DE2F, blip, Config.Alerts.blip.color)
-    
-    local blipName = CreateVarString(10, 'LITERAL_STRING', Config.Alerts.blip.name)
-    Citizen.InvokeNative(0x9CB1A1623062F402, blip, blipName)
-    
-    -- Remove the blip after a set duration
-    Citizen.SetTimeout(Config.Alerts.lawBlipDuration * 1000, function()
-        RemoveBlip(blip)
-    end)
-    
-    -- Play a sound and show notification
-    PlaySoundFrontend("Witness", "Wanted_Sounds", true, 0)
-    Notify(Config.Alerts.lawNotification)
+    -- This event handler is no longer needed as we're using VORP police alert system
+    -- Keeping this empty handler for backward compatibility with other resources
 end)
 
 -- Register a command to get information about the teleport position
