@@ -60,6 +60,8 @@ AddEventHandler("sl_teleport:explode", function(coords)
     -- Notify all players about the explosion (within range)
     local players = GetPlayers()
     for _, player in ipairs(players) do
+        -- Let each client handle the explosion effect based on their location
+        -- Each client will determine if they're inside the cell and protected
         TriggerClientEvent("sl_teleport:explosionEffect", player, coords)
     end
     

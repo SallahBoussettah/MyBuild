@@ -584,8 +584,22 @@ AddEventHandler("sl_teleport:explosionEffect", function(coords)
     -- Play explosion audio
     PlaySoundFrontend("CHECKPOINT_PERFECT", "HUD_MINI_GAME_SOUNDSET", true, 1)
     
-    -- Create explosion particles and effects
-    AddExplosion(coords.x, coords.y, coords.z, 23, 5.0, true, false, true)
+    -- Instead of a damaging explosion, create a safer version
+    local insideCell = IsPlayerInsideCell()
+    
+    if insideCell then
+        -- For players inside the cell, create a non-damaging explosion (visual only)
+        -- Last parameter set to false to prevent damage
+        AddExplosion(coords.x, coords.y, coords.z, 23, 5.0, true, false, false)
+        
+        -- Debug notification if needed
+        if Config.Debug then
+            Debug("Player is inside the cell - protected from explosion damage")
+        end
+    else
+        -- Regular explosion for players outside the cell
+        AddExplosion(coords.x, coords.y, coords.z, 23, 5.0, true, false, true)
+    end
     
     -- Delete the dynamite object
     if DoesEntityExist(dynamiteObj) then

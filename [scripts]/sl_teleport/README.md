@@ -7,6 +7,7 @@ A RedM script that allows players to teleport out of jail cells after using dyna
 - Dynamite placement to initiate a jail break
 - After explosion, a teleport option appears
 - Cell detection system to ensure only players inside cells can teleport
+- Players inside cells are protected from explosion damage
 - Animation during teleport process
 - Configurable teleport points and destinations
 - Law enforcement alerts
