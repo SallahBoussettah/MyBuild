@@ -6,11 +6,11 @@ Config.Debug = true
 -- The teleport interaction point inside the cell
 Config.TeleportPoint = {
     -- Strawberry jail cell teleport point
-    position = vector3(-1812.40, -354.80, 161.42), -- Updated to be inside the rotated cell area
-    radius = 2.5, -- Radius where player can interact with the teleport
+    position = vector3(-1812.50, -355.99, 161.85), -- Position inside the cell for teleporting out
+    radius = 1.0, -- Reduced radius to ensure teleport option only appears inside the cell area
     
     -- Destination outside the cell where players will be teleported to
-    destination = vector3(-1816.2371, -351.5318, 162.2435), -- Updated to exact coordinates from screenshot
+    destination = vector3(-1814.50, -359.3, 161.85), -- Updated to exact coordinates from screenshot
 }
 
 -- Dynamite settings
@@ -21,6 +21,7 @@ Config.Dynamite = {
     placementDuration = 3000, -- Time in ms that it takes to place the dynamite (animation time)
     cooldownTime = 3600, -- Cooldown in seconds before another dynamite can be placed (1 hour)
     modelObject = "p_dynamite01x", -- The model of the dynamite object that appears on the wall
+    placementPosition = vector3(-1814.50, -355.99, 161.85), -- Position outside the cell where dynamite can be placed
     placementRadius = 1.0, -- Even smaller radius for placing dynamite to prevent cell interior placement
     outsideCellOnly = true, -- New setting to prevent players inside the cell from placing dynamite
     

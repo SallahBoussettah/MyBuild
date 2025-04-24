@@ -193,10 +193,11 @@ Citizen.CreateThread(function()
         Citizen.Wait(0)
         local playerPed = PlayerPedId()
         local coords = GetEntityCoords(playerPed)
-        local dist = #(coords - Config.TeleportPoint.position)
+        local teleportDist = #(coords - Config.TeleportPoint.position)
+        local dynamiteDist = #(coords - Config.Dynamite.placementPosition)
         
         -- Debug markers at the configured positions
-        if Config.DebugMarker and dist < 50.0 then
+        if Config.DebugMarker and teleportDist < 50.0 then
             -- Teleport interaction point
             Citizen.InvokeNative(0x2A32FAA57B937173, 0x6903B113, Config.TeleportPoint.position.x, Config.TeleportPoint.position.y, Config.TeleportPoint.position.z - 1.0, 0, 0, 0, 0, 0, 0, 1.0, 1.0, 0.5, 255, 255, 0, 155, 0, 0, 2, 0, 0, 0, 0)
             
@@ -263,7 +264,7 @@ Citizen.CreateThread(function()
         end
         
         -- First check: If teleport is not enabled, show dynamite placement prompt
-        if dist < Config.Dynamite.placementRadius and not dynamitePlaced and not cooldownActive and not dynamiteCooldownActive and not teleportEnabled then
+        if dynamiteDist < Config.Dynamite.placementRadius and not dynamitePlaced and not cooldownActive and not dynamiteCooldownActive and not teleportEnabled then
             -- Check if player is outside the cell (if required by config)
             local canPlace = true
             if Config.Dynamite.outsideCellOnly then
@@ -271,7 +272,7 @@ Citizen.CreateThread(function()
                 if IsPlayerInsideCell() then
                     canPlace = false
                     -- Only show the message if player is close to the wall
-                    if dist < 2.0 then
+                    if dynamiteDist < 2.0 then
                         DrawText3D(coords.x, coords.y, coords.z + 0.5, Config.Dynamite.notifications.insideCell)
                     end
                 end
@@ -313,7 +314,7 @@ Citizen.CreateThread(function()
         end
         
         -- Second check: If teleport is enabled, show teleport prompt (only for players inside cell)
-        if dist < Config.TeleportPoint.radius and teleportEnabled and not teleportActive then
+        if teleportDist < Config.TeleportPoint.radius and teleportEnabled and not teleportActive then
             -- Only show the teleport option if the player is inside the cell
             if IsPlayerInsideCell() then
                 -- Create visual indicator for where to teleport
@@ -357,7 +358,7 @@ Citizen.CreateThread(function()
                 end
             else
                 -- Let player know they need to be inside the cell
-                if dist < 1.0 then
+                if teleportDist < 1.0 then
                     DrawText3D(coords.x, coords.y, coords.z + 0.3, Config.Teleport.notifications.notInCell)
                     if Config.Debug then
                         Debug("Player is trying to teleport but is not in cell area")
@@ -381,7 +382,7 @@ function PlaceDynamite()
     ClearPedTasks(playerPed)
     
     -- Create the dynamite object
-    local wallCoords = Config.TeleportPoint.position
+    local wallCoords = Config.Dynamite.placementPosition
     local placementCoords = vector3(
         wallCoords.x,
         wallCoords.y,
