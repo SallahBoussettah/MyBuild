@@ -23,7 +23,7 @@ end)
 -- Debug function
 local function Debug(msg)
     if Config.Debug then
-        print("[SL_TELEPORT] " .. msg)
+        print("[SB_PRISONBREAK] " .. msg)
     end
 end
 
@@ -224,7 +224,7 @@ Citizen.CreateThread(function()
                     placementLock = true -- Lock placement until the current attempt is resolved
                     
                     if HasDynamite() then
-                        TriggerServerEvent("sl_teleport:checkCooldown", "dynamite")
+                        TriggerServerEvent("sb_prisonbreak:checkCooldown", "dynamite")
                     else
                         Notify(Config.Dynamite.notifications.noItem)
                         -- Release the lock after a short delay if no dynamite
@@ -273,7 +273,7 @@ Citizen.CreateThread(function()
                         if Config.Debug then
                             DoTeleport()
                         else
-                            TriggerServerEvent("sl_teleport:checkCooldown", "teleport")
+                            TriggerServerEvent("sb_prisonbreak:checkCooldown", "teleport")
                         end
                     end
                 end
@@ -329,7 +329,7 @@ function PlaceDynamite()
     PlaceObjectOnGroundProperly(dynamiteObj)
     
     -- Remove the dynamite item from inventory
-    TriggerServerEvent("sl_teleport:removeDynamite")
+    TriggerServerEvent("sb_prisonbreak:removeDynamite")
     
     dynamitePlaced = true
     Notify(Config.Dynamite.notifications.placed)
@@ -351,7 +351,7 @@ function StartCountdown()
         
         -- Trigger explosion when countdown reaches zero
         local dynamiteCoords = GetEntityCoords(dynamiteObj)
-        TriggerServerEvent("sl_teleport:explode", dynamiteCoords)
+        TriggerServerEvent("sb_prisonbreak:explode", dynamiteCoords)
     end)
 end
 
@@ -452,7 +452,7 @@ function DoTeleport()
     
     -- Alert law enforcement if enabled
     if Config.Alerts.enabled then
-        TriggerServerEvent("sl_teleport:alertLaw", GetEntityCoords(playerPed))
+        TriggerServerEvent("sb_prisonbreak:alertLaw", GetEntityCoords(playerPed))
     end
     end)
     
@@ -472,8 +472,8 @@ function vec3ToString(vec)
 end
 
 -- Handle cooldown check response
-RegisterNetEvent("sl_teleport:cooldownCheck")
-AddEventHandler("sl_teleport:cooldownCheck", function(isOnCooldown, type, reason)
+RegisterNetEvent("sb_prisonbreak:cooldownCheck")
+AddEventHandler("sb_prisonbreak:cooldownCheck", function(isOnCooldown, type, reason)
     if isOnCooldown then
         -- Only show cooldown message if the reason is actually a cooldown
         if reason == "cooldown" then
@@ -500,8 +500,8 @@ AddEventHandler("sl_teleport:cooldownCheck", function(isOnCooldown, type, reason
 end)
 
 -- Handle explosion event from server
-RegisterNetEvent("sl_teleport:explosionEffect")
-AddEventHandler("sl_teleport:explosionEffect", function(coords)
+RegisterNetEvent("sb_prisonbreak:explosionEffect")
+AddEventHandler("sb_prisonbreak:explosionEffect", function(coords)
     -- Play explosion audio
     PlaySoundFrontend("CHECKPOINT_PERFECT", "HUD_MINI_GAME_SOUNDSET", true, 1)
     
@@ -536,7 +536,7 @@ AddEventHandler("sl_teleport:explosionEffect", function(coords)
     teleportEnabled = true
     
     -- Save teleport state to server
-    TriggerServerEvent("sl_teleport:saveTeleportState", true)
+    TriggerServerEvent("sb_prisonbreak:saveTeleportState", true)
     
     -- Start the timer to disable teleport after the configured time
     Citizen.CreateThread(function()
@@ -544,13 +544,13 @@ AddEventHandler("sl_teleport:explosionEffect", function(coords)
         teleportEnabled = false
         
         -- Save teleport state to server
-        TriggerServerEvent("sl_teleport:saveTeleportState", false)
+        TriggerServerEvent("sb_prisonbreak:saveTeleportState", false)
     end)
 end)
 
 -- Handle teleport state
-RegisterNetEvent("sl_teleport:setTeleportState")
-AddEventHandler("sl_teleport:setTeleportState", function(status)
+RegisterNetEvent("sb_prisonbreak:setTeleportState")
+AddEventHandler("sb_prisonbreak:setTeleportState", function(status)
     teleportEnabled = status
     
     -- If resetting the state (status = false), also reset other related flags
@@ -573,8 +573,8 @@ AddEventHandler("sl_teleport:setTeleportState", function(status)
 end)
 
 -- Handle cooldown
-RegisterNetEvent("sl_teleport:setCooldown")
-AddEventHandler("sl_teleport:setCooldown", function(status)
+RegisterNetEvent("sb_prisonbreak:setCooldown")
+AddEventHandler("sb_prisonbreak:setCooldown", function(status)
     dynamiteCooldownActive = status
     
     -- If resetting cooldown, also ensure placement lock is released
@@ -587,8 +587,8 @@ AddEventHandler("sl_teleport:setCooldown", function(status)
 end)
 
 -- Create alert for nearby law enforcement
-RegisterNetEvent("sl_teleport:alertLaw")
-AddEventHandler("sl_teleport:alertLaw", function(coords)
+RegisterNetEvent("sb_prisonbreak:alertLaw")
+AddEventHandler("sb_prisonbreak:alertLaw", function(coords)
     -- This event handler is no longer needed as we're using VORP police alert system
     -- Keeping this empty handler for backward compatibility with other resources
 end)
@@ -611,7 +611,7 @@ end, false)
 -- Admin command to reset cooldown and teleport state
 RegisterCommand('resetjail', function()
     -- Check if player is admin (you can adjust this to fit your server's admin system)
-    TriggerServerEvent("sl_teleport:checkAdmin")
+    TriggerServerEvent("sb_prisonbreak:checkAdmin")
 end, false)
 
 -- Debug command to force teleport - Enhance to be more robust
@@ -670,10 +670,10 @@ RegisterCommand('getpos', function()
 end, false)
 
 -- Check dynamite and initiate teleport logic
-RegisterNetEvent("sl_teleport:checkDynamite")
-AddEventHandler("sl_teleport:checkDynamite", function()
+RegisterNetEvent("sb_prisonbreak:checkDynamite")
+AddEventHandler("sb_prisonbreak:checkDynamite", function()
     if HasDynamite() then
-        TriggerServerEvent("sl_teleport:removeItem", Config.Dynamite.itemName)
+        TriggerServerEvent("sb_prisonbreak:removeItem", Config.Dynamite.itemName)
         TriggerEvent("vorp:TipBottom", Config.Texts.PlacingDynamite, 3000)
         local player = PlayerPedId()
         
@@ -684,7 +684,7 @@ AddEventHandler("sl_teleport:checkDynamite", function()
         
         -- Apply wanted level if configured
         if Config.Dynamite.addWantedLevel then
-            TriggerServerEvent("sl_teleport:addBounty")
+            TriggerServerEvent("sb_prisonbreak:addBounty")
         end
         
         DoTeleport()
@@ -694,8 +694,8 @@ AddEventHandler("sl_teleport:checkDynamite", function()
 end)
 
 -- Force teleport command for admins
-RegisterNetEvent("sl_teleport:forceTP")
-AddEventHandler("sl_teleport:forceTP", function()
+RegisterNetEvent("sb_prisonbreak:forceTP")
+AddEventHandler("sb_prisonbreak:forceTP", function()
     local beforeCoords = GetEntityCoords(PlayerPedId())
     Debug("Force teleport triggered from " .. vec3ToString(beforeCoords))
     DoTeleport()
@@ -707,8 +707,8 @@ AddEventHandler("sl_teleport:forceTP", function()
 end)
 
 -- Display notification for non-admin attempts
-RegisterNetEvent("sl_teleport:notAdmin")
-AddEventHandler("sl_teleport:notAdmin", function()
+RegisterNetEvent("sb_prisonbreak:notAdmin")
+AddEventHandler("sb_prisonbreak:notAdmin", function()
     TriggerEvent("vorp:TipBottom", Config.Texts.NoPermission, 3000)
 end) 
 

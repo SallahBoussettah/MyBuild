@@ -1,0 +1,11 @@
+<Map>
+    <MapMeta NameMap="DELETION" CreatorMap="MapLoader" DeletionMap="true"/>
+<!-- POKER TABLE CASINO -->
+	<DeletedObject Hash="1525247081" Position_x="3287.3869628906" Position_y="-1317.4017333984" Position_z="41.77564239502"/>
+	<DeletedObject Hash="1525247081" Position_x="3288.4406738281" Position_y="-1316.7728271484" Position_z="41.77564239502"/>
+	<DeletedObject Hash="138732084" Position_x="3288.4475097656" Position_y="-1318.0037841797" Position_z="41.773414611816"/>
+	<DeletedObject Hash="1525247081" Position_x="3289.5031738281" Position_y="-1317.3846435547" Position_z="41.775810241699"/>
+	<DeletedObject Hash="1525247081" Position_x="3289.5021972656" Position_y="-1318.6048583984" Position_z="41.775810241699"/>
+	<DeletedObject Hash="1525247081" Position_x="3288.4582519531" Position_y="-1319.2196044922" Position_z="41.77564239502"/>
+	<DeletedObject Hash="1525247081" Position_x="3287.3869628906" Position_y="-1318.6258544922" Position_z="41.77564239502"/>
+</Map>

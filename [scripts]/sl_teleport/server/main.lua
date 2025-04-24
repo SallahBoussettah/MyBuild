@@ -16,21 +16,21 @@ VORPinv = exports.vorp_inventory:vorp_inventoryApi()
 -- Debug function
 local function Debug(msg)
     if Config.Debug then
-        print("[SL_TELEPORT] " .. msg)
+        print("[SB_PRISONBREAK] " .. msg)
     end
 end
 
 -- Remove dynamite from player inventory
-RegisterServerEvent("sl_teleport:removeDynamite")
-AddEventHandler("sl_teleport:removeDynamite", function()
+RegisterServerEvent("sb_prisonbreak:removeDynamite")
+AddEventHandler("sb_prisonbreak:removeDynamite", function()
     local _source = source
     VORPinv.subItem(_source, Config.Dynamite.itemName, 1)
     Debug("Removed 1 dynamite from player " .. _source)
 end)
 
 -- Check if the action is on cooldown
-RegisterServerEvent("sl_teleport:checkCooldown")
-AddEventHandler("sl_teleport:checkCooldown", function(type)
+RegisterServerEvent("sb_prisonbreak:checkCooldown")
+AddEventHandler("sb_prisonbreak:checkCooldown", function(type)
     local _source = source
     
     if type == "dynamite" then
@@ -39,23 +39,23 @@ AddEventHandler("sl_teleport:checkCooldown", function(type)
         
         -- If player doesn't have dynamite, don't proceed regardless of cooldown
         if not hasDynamite then
-            TriggerClientEvent("sl_teleport:cooldownCheck", _source, true, type, "no_item") -- Add reason parameter "no_item"
+            TriggerClientEvent("sb_prisonbreak:cooldownCheck", _source, true, type, "no_item") -- Add reason parameter "no_item"
             TriggerClientEvent("vorp:NotifyLeft", _source, "No Dynamite", "You don't have any dynamite", "generic_textures", "cross", 4000)
             return
         end
         
         -- Only if player has dynamite, check the actual cooldown
-        TriggerClientEvent("sl_teleport:cooldownCheck", _source, dynamiteCooldownActive, type, "cooldown") -- Add reason parameter "cooldown"
+        TriggerClientEvent("sb_prisonbreak:cooldownCheck", _source, dynamiteCooldownActive, type, "cooldown") -- Add reason parameter "cooldown"
     else
         -- For teleporting, never use cooldown - always allow if teleport is enabled
         local isOnCooldown = false -- Never apply cooldown to teleporting
-        TriggerClientEvent("sl_teleport:cooldownCheck", _source, isOnCooldown, type, "cooldown") -- Add reason parameter "cooldown"
+        TriggerClientEvent("sb_prisonbreak:cooldownCheck", _source, isOnCooldown, type, "cooldown") -- Add reason parameter "cooldown"
     end
 end)
 
 -- Handle explosion event
-RegisterServerEvent("sl_teleport:explode")
-AddEventHandler("sl_teleport:explode", function(coords)
+RegisterServerEvent("sb_prisonbreak:explode")
+AddEventHandler("sb_prisonbreak:explode", function(coords)
     local _source = source
     
     -- Record the explosion time
@@ -66,7 +66,7 @@ AddEventHandler("sl_teleport:explode", function(coords)
     for _, player in ipairs(players) do
         -- Let each client handle the explosion effect based on their location
         -- Each client will determine if they're inside the cell and protected
-        TriggerClientEvent("sl_teleport:explosionEffect", player, coords)
+        TriggerClientEvent("sb_prisonbreak:explosionEffect", player, coords)
     end
     
     -- Alert law enforcement
@@ -132,8 +132,8 @@ AddEventHandler("sl_teleport:explode", function(coords)
 end)
 
 -- Alert law enforcement for teleport
-RegisterServerEvent("sl_teleport:alertLaw")
-AddEventHandler("sl_teleport:alertLaw", function(coords)
+RegisterServerEvent("sb_prisonbreak:alertLaw")
+AddEventHandler("sb_prisonbreak:alertLaw", function(coords)
     local _source = source
     
     -- Get all online players
@@ -185,8 +185,8 @@ AddEventHandler("sl_teleport:alertLaw", function(coords)
 end)
 
 -- Admin command to check if player is admin and reset cooldown/teleport
-RegisterServerEvent("sl_teleport:checkAdmin")
-AddEventHandler("sl_teleport:checkAdmin", function()
+RegisterServerEvent("sb_prisonbreak:checkAdmin")
+AddEventHandler("sb_prisonbreak:checkAdmin", function()
     local _source = source
     local Character = VORPcore.getUser(_source).getUsedCharacter
     
@@ -199,8 +199,8 @@ AddEventHandler("sl_teleport:checkAdmin", function()
         lastExplosionTime = 0
         
         -- Notify all clients to reset their states
-        TriggerClientEvent("sl_teleport:setCooldown", -1, false)
-        TriggerClientEvent("sl_teleport:setTeleportState", -1, false)
+        TriggerClientEvent("sb_prisonbreak:setCooldown", -1, false)
+        TriggerClientEvent("sb_prisonbreak:setTeleportState", -1, false)
         
         -- Save the reset state to the JSON file to ensure persistence
         local data = {
@@ -221,8 +221,8 @@ AddEventHandler("sl_teleport:checkAdmin", function()
 end)
 
 -- Save the teleport state from client
-RegisterServerEvent("sl_teleport:saveTeleportState")
-AddEventHandler("sl_teleport:saveTeleportState", function(state)
+RegisterServerEvent("sb_prisonbreak:saveTeleportState")
+AddEventHandler("sb_prisonbreak:saveTeleportState", function(state)
     teleportEnabled = state
     
     -- If enabled, update the last explosion time
@@ -231,7 +231,7 @@ AddEventHandler("sl_teleport:saveTeleportState", function(state)
     end
     
     -- Propagate state to all clients to ensure synchronization
-    TriggerClientEvent("sl_teleport:setTeleportState", -1, state)
+    TriggerClientEvent("sb_prisonbreak:setTeleportState", -1, state)
     
     -- Save state to file immediately
     local data = {
@@ -275,7 +275,7 @@ AddEventHandler('onResourceStart', function(resourceName)
         if data and data.teleportEnabled ~= nil then
             teleportEnabled = data.teleportEnabled
             -- Notify all clients of the current state
-            TriggerClientEvent("sl_teleport:setTeleportState", -1, teleportEnabled)
+            TriggerClientEvent("sb_prisonbreak:setTeleportState", -1, teleportEnabled)
         end
         
         if data and data.explosionTime then
@@ -291,11 +291,11 @@ AddEventHandler('onResourceStart', function(resourceName)
                     local remainingTime = Config.TeleportActiveTime - elapsedSinceExplosion
                     
                     -- Notify all clients
-                    TriggerClientEvent("sl_teleport:setTeleportState", -1, true)
+                    TriggerClientEvent("sb_prisonbreak:setTeleportState", -1, true)
                     
                     Citizen.Wait(remainingTime * 1000)
                     teleportEnabled = false
-                    TriggerClientEvent("sl_teleport:setTeleportState", -1, false)
+                    TriggerClientEvent("sb_prisonbreak:setTeleportState", -1, false)
                 end)
             end
             
@@ -308,11 +308,11 @@ AddEventHandler('onResourceStart', function(resourceName)
                     local remainingTime = Config.Dynamite.cooldownTime - elapsedSinceExplosion
                     
                     -- Notify all clients
-                    TriggerClientEvent("sl_teleport:setCooldown", -1, true)
+                    TriggerClientEvent("sb_prisonbreak:setCooldown", -1, true)
                     
                     Citizen.Wait(remainingTime * 1000)
                     dynamiteCooldownActive = false
-                    TriggerClientEvent("sl_teleport:setCooldown", -1, false)
+                    TriggerClientEvent("sb_prisonbreak:setCooldown", -1, false)
                 end)
             end
         end

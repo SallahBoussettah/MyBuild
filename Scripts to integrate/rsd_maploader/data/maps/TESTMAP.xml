@@ -1,0 +1,7 @@
+<Map>
+    <MapMeta NameMap="TESTMAP" CreatorMap="RSDDEV" RangeMap="20.0"/>
+    <Object Hash="937024151" Position_x="-874.25048828125" Position_y="-1284.7908935547" Position_z="45.689277648926" Rotation_x="0.0" Rotation_y="0.0" Rotation_z="-179.86157226562" Collision="true" Visible="true"/>
+    <Object Hash="1286899977" Position_x="-871.33911132812" Position_y="-1284.7659912109" Position_z="44.946666717529" Rotation_x="0.0" Rotation_y="90.0" Rotation_z="-88.349182128906" Collision="true" Visible="true"/>
+    <Object Hash="1286899977" Position_x="-874.17163085938" Position_y="-1284.7756347656" Position_z="44.966663360596" Rotation_x="0.0" Rotation_y="90.0" Rotation_z="-88.349182128906" Collision="true" Visible="true"/>
+    <Object Hash="1286899977" Position_x="-871.35375976562" Position_y="-1284.7573242188" Position_z="46.426418304443" Rotation_x="0.0" Rotation_y="90.0" Rotation_z="-88.349189758301" Collision="true" Visible="true"/>
+</Map>

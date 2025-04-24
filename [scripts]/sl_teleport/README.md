@@ -29,8 +29,8 @@ This script is fully integrated with the VORP police system:
 
 ## Installation
 
-1. Copy the `sl_teleport` folder to your server's `resources` directory
-2. Add `ensure sl_teleport` to your server.cfg
+1. Copy the `sb_prisonbreak` folder to your server's `resources` directory
+2. Add `ensure sb_prisonbreak` to your server.cfg
 3. Configure the script in `config.lua` to match your server needs
 
 ## Configuration

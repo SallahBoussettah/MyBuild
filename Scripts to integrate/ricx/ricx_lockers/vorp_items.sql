@@ -1,0 +1,10 @@
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('r_locker1', 'Locker 1', 10, 1, 'item_standard', 1) ON DUPLICATE KEY UPDATE `limit` = 10;
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('r_locker2', 'Locker 2', 10, 1, 'item_standard', 1) ON DUPLICATE KEY UPDATE `limit` = 10;
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('r_locker3', 'Locker 3', 10, 1, 'item_standard', 1) ON DUPLICATE KEY UPDATE `limit` = 10;
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('r_locker4', 'Locker 4', 10, 1, 'item_standard', 1) ON DUPLICATE KEY UPDATE `limit` = 10;
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('r_locker5', 'Locker 5', 10, 1, 'item_standard', 1) ON DUPLICATE KEY UPDATE `limit` = 10;
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('r_locker6', 'Locker 6', 10, 1, 'item_standard', 1) ON DUPLICATE KEY UPDATE `limit` = 10;
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('r_locker7', 'Locker 7', 10, 1, 'item_standard', 1) ON DUPLICATE KEY UPDATE `limit` = 10;
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('r_locker8', 'Locker 8', 10, 1, 'item_standard', 1) ON DUPLICATE KEY UPDATE `limit` = 10;
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('r_locker9', 'Locker 9', 10, 1, 'item_standard', 1) ON DUPLICATE KEY UPDATE `limit` = 10;
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('r_locker10', 'Locker 10', 10, 1, 'item_standard', 1) ON DUPLICATE KEY UPDATE `limit` = 10;

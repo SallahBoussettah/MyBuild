@@ -1,0 +1,2 @@
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('ricx_legendary_map_1', 'Legendary Animal Map 1', 5, 1, 'item_standard', 1);
+INSERT INTO `items`(`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES ('ricx_legendary_map_2', 'Legendary Animal Map 2', 5, 1, 'item_standard', 1);
