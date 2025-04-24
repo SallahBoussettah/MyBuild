@@ -49,7 +49,11 @@ The script is highly configurable through the `config.lua` file. Key settings in
 ### Admin Commands
 
 - `/teleportinfo` - Shows your current coordinates (only in debug mode)
-- `/resetteleport` - Resets the teleport system including cooldown (admin only)
+- `/resetjail` - Immediately resets the entire jail teleport system (admin only)
+  - Clears cooldowns and timers
+  - Removes any placed dynamite
+  - Disables active teleport options
+  - Allows the jail system to be used again right away
 
 ## Dependencies
 

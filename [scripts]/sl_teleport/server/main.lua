@@ -132,23 +132,31 @@ AddEventHandler("sl_teleport:checkAdmin", function()
     
     -- Check if player is admin (using VORP's group system)
     if Character.group == "admin" or Character.group == "moderator" then
-        -- Reset cooldown
+        -- Reset all jail system states
         dynamiteCooldownActive = false
-        
-        -- Reset teleport state
         teleportEnabled = false
+        lastTeleportTime = 0
+        lastExplosionTime = 0
         
-        -- Notify all clients
+        -- Notify all clients to reset their states
         TriggerClientEvent("sl_teleport:setCooldown", -1, false)
         TriggerClientEvent("sl_teleport:setTeleportState", -1, false)
         
+        -- Save the reset state to the JSON file to ensure persistence
+        local data = {
+            explosionTime = 0,
+            teleportTime = 0,
+            teleportEnabled = false
+        }
+        SaveResourceFile(GetCurrentResourceName(), "teleport_state.json", json.encode(data), -1)
+        
         -- Notify the admin
-        TriggerClientEvent("vorp:NotifyLeft", _source, "Reset Complete", "Teleport system has been reset", "generic_textures", "tick", 4000)
-        Debug("Admin " .. _source .. " reset the teleport system")
+        TriggerClientEvent("vorp:NotifyLeft", _source, "Reset Complete", "Jail teleport system has been completely reset", "generic_textures", "tick", 4000)
+        Debug("Admin " .. _source .. " performed a full reset of the jail teleport system")
     else
         -- Not an admin
         TriggerClientEvent("vorp:NotifyLeft", _source, "Access Denied", "You need admin privileges to use this command", "generic_textures", "tick", 4000, "COLOR_RED")
-        Debug("Player " .. _source .. " tried to reset teleport without permission")
+        Debug("Player " .. _source .. " tried to reset jail teleport without permission")
     end
 end)
 

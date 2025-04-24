@@ -627,16 +627,42 @@ AddEventHandler("sl_teleport:explosionEffect", function(coords)
     end)
 end)
 
--- Handle cooldown
-RegisterNetEvent("sl_teleport:setCooldown")
-AddEventHandler("sl_teleport:setCooldown", function(status)
-    dynamiteCooldownActive = status
-end)
-
 -- Handle teleport state
 RegisterNetEvent("sl_teleport:setTeleportState")
 AddEventHandler("sl_teleport:setTeleportState", function(status)
     teleportEnabled = status
+    
+    -- If resetting the state (status = false), also reset other related flags
+    if status == false then
+        dynamitePlaced = false
+        teleportActive = false
+        teleportLock = false
+        cooldownActive = false
+        
+        -- If there was a dynamite object, clean it up
+        if DoesEntityExist(dynamiteObj) then
+            DeleteObject(dynamiteObj)
+            dynamiteObj = nil
+        end
+        
+        if Config.Debug then
+            Debug("All client-side teleport states have been reset")
+        end
+    end
+end)
+
+-- Handle cooldown
+RegisterNetEvent("sl_teleport:setCooldown")
+AddEventHandler("sl_teleport:setCooldown", function(status)
+    dynamiteCooldownActive = status
+    
+    -- If resetting cooldown, also ensure placement lock is released
+    if status == false then
+        placementLock = false
+        if Config.Debug then
+            Debug("Dynamite cooldown and locks have been reset")
+        end
+    end
 end)
 
 -- Create alert for nearby law enforcement
@@ -676,7 +702,7 @@ RegisterCommand('teleportinfo', function()
 end, false)
 
 -- Admin command to reset cooldown and teleport state
-RegisterCommand('resetteleport', function()
+RegisterCommand('resetjail', function()
     -- Check if player is admin (you can adjust this to fit your server's admin system)
     TriggerServerEvent("sl_teleport:checkAdmin")
 end, false)
