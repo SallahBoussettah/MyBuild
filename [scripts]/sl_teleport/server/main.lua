@@ -34,7 +34,22 @@ AddEventHandler("sl_teleport:checkCooldown", function(type)
     local _source = source
     
     if type == "dynamite" then
-        -- Only check dynamite cooldown for dynamite placement
+        -- First check if player has dynamite before proceeding
+        local hasDynamite = VORPinv.getItemCount(_source, Config.Dynamite.itemName) > 0
+        
+        -- Debug info
+        if Config.Debug then
+            Debug("Player " .. _source .. " dynamite check: " .. tostring(hasDynamite) .. ", cooldown: " .. tostring(dynamiteCooldownActive))
+        end
+        
+        -- If player doesn't have dynamite, don't proceed regardless of cooldown
+        if not hasDynamite then
+            TriggerClientEvent("sl_teleport:cooldownCheck", _source, true, type) -- Use cooldown response to block action
+            TriggerClientEvent("vorp:NotifyLeft", _source, "No Dynamite", "You don't have any dynamite", "generic_textures", "cross", 4000)
+            return
+        end
+        
+        -- Only if player has dynamite, check the actual cooldown
         TriggerClientEvent("sl_teleport:cooldownCheck", _source, dynamiteCooldownActive, type)
     else
         -- For teleporting, never use cooldown - always allow if teleport is enabled
