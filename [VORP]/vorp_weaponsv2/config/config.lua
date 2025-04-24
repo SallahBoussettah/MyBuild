@@ -42,6 +42,10 @@ Config.General = {
             Pos = { x = 1327.09, y = -1321.91, z = 77.88 },  -- location weapon customization station
             Pos2 = { x = 1326.09, y = -1321.91, z = 78.28 }, -- location spawned weapon 3d model
         },
+        SaintDenis = {
+            Pos = { x = 2710.9685, y = -1287.6633, z = 49.6304 },  -- location weapon customization station
+            Pos2 = { x = 2710.05, y = -1288.06, z = 49.89 }, -- location spawned weapon 3d model
+        }
     },
 
     craftinglocation = {
@@ -51,6 +55,9 @@ Config.General = {
         Rhodes = {
             Pos = { x = 1329.68, y = -1320.9, z = 77.88 }, -- location weapon crafting station
         },
+        SaintDenis = {
+            Pos = { x = 2711.5557, y = -1285.0355, z = 49.6304}, -- location weapon crafting station
+        }
     },
 
 
