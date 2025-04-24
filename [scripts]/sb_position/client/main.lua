@@ -23,7 +23,7 @@ end)
 -- Debug function
 local function Debug(msg)
     if Config.Debug then
-        print("[SL_POSITION] " .. msg)
+        print("[SB_POSITION] " .. msg)
     end
 end
 

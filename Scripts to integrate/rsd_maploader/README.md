@@ -28,6 +28,3 @@ Version	      | [1.0]
 ### © COPYRIGHT.
 
 Powered & Copyrighted by [©Salah]
-©REDSTART
-©RS DEVELOPMENT
-©RS DEV

@@ -1,7 +1,6 @@
 version '1.0.0'
-author 'RS DEVELOPMENT'
-description 'RSD MAPLOADER https://script.redstartrp.fr'
-repository 'https://script.redstartrp.fr'
+author 'Salah'
+description 'rsd_maploader a script to load maps'
 
 fx_version "adamant"
 games {"rdr3"}

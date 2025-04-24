@@ -30,8 +30,8 @@ Edit `config.lua` to customize:
 
 ## Installation
 
-1. Place the `sl_position` folder in your server's `resources/[scripts]` directory
-2. Add `ensure sl_position` to your `server.cfg`
+1. Place the `sb_position` folder in your server's `resources/[scripts]` directory
+2. Add `ensure sb_position` to your `server.cfg`
 3. Restart your server or start the resource
 
 ## Requirements

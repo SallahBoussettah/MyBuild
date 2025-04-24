@@ -26,6 +26,3 @@ Version	      | [1.0]
 
 
 Powered & Copyrighted by [Salah]
-©REDSTART
-©RS DEVELOPMENT
-©RS DEV
