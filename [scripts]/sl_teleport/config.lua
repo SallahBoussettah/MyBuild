@@ -6,11 +6,11 @@ Config.Debug = true
 -- The teleport interaction point inside the cell
 Config.TeleportPoint = {
     -- Strawberry jail cell teleport point
-    position = vector3(-1814.496, -355.9884, 161.8523), -- This is the same position as the original wallbreak script
+    position = vector3(-1812.40, -354.80, 161.42), -- Updated to be inside the rotated cell area
     radius = 2.5, -- Radius where player can interact with the teleport
     
     -- Destination outside the cell where players will be teleported to
-    destination = vector3(-1812.05, -353.49, 162.65), -- Increased Z coordinate to prevent underground teleport
+    destination = vector3(-1816.2371, -351.5318, 162.2435), -- Updated to exact coordinates from screenshot
 }
 
 -- Dynamite settings
@@ -21,6 +21,8 @@ Config.Dynamite = {
     placementDuration = 3000, -- Time in ms that it takes to place the dynamite (animation time)
     cooldownTime = 3600, -- Cooldown in seconds before another dynamite can be placed (1 hour)
     modelObject = "p_dynamite01x", -- The model of the dynamite object that appears on the wall
+    placementRadius = 1.0, -- Even smaller radius for placing dynamite to prevent cell interior placement
+    outsideCellOnly = true, -- New setting to prevent players inside the cell from placing dynamite
     
     -- Notification texts
     notifications = {
@@ -30,6 +32,7 @@ Config.Dynamite = {
         countdown = "Dynamite will explode in %s seconds!",
         cooldown = "The jail was recently damaged. You must wait before attempting another break.",
         cannotPlace = "You can't place dynamite here.",
+        insideCell = "You cannot place dynamite from inside the cell."
     }
 }
 
@@ -40,10 +43,11 @@ Config.Teleport = {
     
     -- Area that defines "inside the cell" - only players in this area will see the teleport option
     cellArea = {
-        center = vector3(-1815.42, -354.72, 161.85),
-        width = 6.0, -- Increased width of the cell area
-        length = 6.0, -- Increased length of the cell area
-        height = 4.0, -- Increased height of the cell area
+        center = vector3(-1812.80, -354.90, 161.42), -- Adjusted to be more centered in the actual cell
+        width = 2.8, -- Reduced width of the cell area
+        length = 4, -- Reduced length of the cell area
+        height = 3.0, -- Reduced height of the cell area
+        rotation = 65.0, -- Rotation angle in degrees (0 = aligned with world coordinates)
     },
     
     animationDict = "amb_misc@world_human_pray@male_a@idle_b", -- Animation dictionary

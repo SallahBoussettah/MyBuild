@@ -75,27 +75,46 @@ local function IsPlayerInsideCell()
     local halfWidth = Config.Teleport.cellArea.width / 2
     local halfLength = Config.Teleport.cellArea.length / 2
     local halfHeight = Config.Teleport.cellArea.height / 2
+    local rotation = Config.Teleport.cellArea.rotation or 0.0 -- Default to 0 if not defined
     
     -- Debug output of player position and cell boundaries
     if Config.Debug then
         Debug("Player position: x=" .. coords.x .. ", y=" .. coords.y .. ", z=" .. coords.z)
-        Debug("Cell boundaries: x=" .. (cellCenter.x - halfWidth) .. " to " .. (cellCenter.x + halfWidth) .. 
-              ", y=" .. (cellCenter.y - halfLength) .. " to " .. (cellCenter.y + halfLength) .. 
-              ", z=" .. (cellCenter.z - halfHeight) .. " to " .. (cellCenter.z + halfHeight))
+        Debug("Cell center: x=" .. cellCenter.x .. ", y=" .. cellCenter.y .. ", z=" .. cellCenter.z)
+        Debug("Cell dimensions: width=" .. Config.Teleport.cellArea.width .. 
+              ", length=" .. Config.Teleport.cellArea.length .. 
+              ", height=" .. Config.Teleport.cellArea.height ..
+              ", rotation=" .. rotation)
     end
     
-    -- Check if player is within the cell boundaries (box)
-    if coords.x >= (cellCenter.x - halfWidth) and coords.x <= (cellCenter.x + halfWidth) and
-       coords.y >= (cellCenter.y - halfLength) and coords.y <= (cellCenter.y + halfLength) and
+    -- Calculate rotated position relative to cell center
+    local relX = coords.x - cellCenter.x
+    local relY = coords.y - cellCenter.y
+    
+    -- Convert rotation to radians
+    local rotRad = math.rad(rotation)
+    local cosRot = math.cos(rotRad)
+    local sinRot = math.sin(rotRad)
+    
+    -- Rotate the relative coordinates
+    local rotatedX = relX * cosRot - relY * sinRot
+    local rotatedY = relX * sinRot + relY * cosRot
+    
+    -- Check if rotated position is within cell boundaries
+    if rotatedX >= -halfWidth and rotatedX <= halfWidth and
+       rotatedY >= -halfLength and rotatedY <= halfLength and
        coords.z >= (cellCenter.z - halfHeight) and coords.z <= (cellCenter.z + halfHeight) then
         if Config.Debug then
-            Debug("Player IS inside cell boundaries")
+            Debug("Player IS inside cell boundaries (with rotation)")
         end
         return true
     end
     
     if Config.Debug then
         Debug("Player is NOT in cell boundaries")
+        Debug("Rotated position: x=" .. rotatedX .. ", y=" .. rotatedY)
+        Debug("Cell bounds x: " .. -halfWidth .. " to " .. halfWidth)
+        Debug("Cell bounds y: " .. -halfLength .. " to " .. halfLength)
     end
     
     return false
@@ -190,63 +209,106 @@ Citizen.CreateThread(function()
                 local halfWidth = Config.Teleport.cellArea.width / 2
                 local halfLength = Config.Teleport.cellArea.length / 2
                 local halfHeight = Config.Teleport.cellArea.height / 2
+                local rotation = Config.Teleport.cellArea.rotation or 0.0
                 
-                -- Draw box outline for cell area
-                local minX, maxX = cellCenter.x - halfWidth, cellCenter.x + halfWidth
-                local minY, maxY = cellCenter.y - halfLength, cellCenter.y + halfLength
-                local minZ, maxZ = cellCenter.z - halfHeight, cellCenter.z + halfHeight
+                -- Convert rotation to radians
+                local rotRad = math.rad(rotation)
+                local cosRot = math.cos(rotRad)
+                local sinRot = math.sin(rotRad)
                 
-                -- Draw lines for the cell boundaries (top)
-                DrawLine(minX, minY, maxZ, maxX, minY, maxZ, 255, 0, 0, 255)
-                DrawLine(maxX, minY, maxZ, maxX, maxY, maxZ, 255, 0, 0, 255)
-                DrawLine(maxX, maxY, maxZ, minX, maxY, maxZ, 255, 0, 0, 255)
-                DrawLine(minX, maxY, maxZ, minX, minY, maxZ, 255, 0, 0, 255)
+                -- Calculate corners with rotation
+                local corners = {
+                    -- Bottom corners
+                    { x = -halfWidth, y = -halfLength, z = -halfHeight },
+                    { x = halfWidth, y = -halfLength, z = -halfHeight },
+                    { x = halfWidth, y = halfLength, z = -halfHeight },
+                    { x = -halfWidth, y = halfLength, z = -halfHeight },
+                    -- Top corners
+                    { x = -halfWidth, y = -halfLength, z = halfHeight },
+                    { x = halfWidth, y = -halfLength, z = halfHeight },
+                    { x = halfWidth, y = halfLength, z = halfHeight },
+                    { x = -halfWidth, y = halfLength, z = halfHeight }
+                }
                 
-                -- Draw lines for the cell boundaries (bottom)
-                DrawLine(minX, minY, minZ, maxX, minY, minZ, 255, 0, 0, 255)
-                DrawLine(maxX, minY, minZ, maxX, maxY, minZ, 255, 0, 0, 255)
-                DrawLine(maxX, maxY, minZ, minX, maxY, minZ, 255, 0, 0, 255)
-                DrawLine(minX, maxY, minZ, minX, minY, minZ, 255, 0, 0, 255)
+                -- Rotate and translate all corners
+                for i, corner in ipairs(corners) do
+                    -- Rotate
+                    local rotX = corner.x * cosRot - corner.y * sinRot
+                    local rotY = corner.x * sinRot + corner.y * cosRot
+                    
+                    -- Translate
+                    corners[i].worldX = cellCenter.x + rotX
+                    corners[i].worldY = cellCenter.y + rotY
+                    corners[i].worldZ = cellCenter.z + corner.z
+                end
+                
+                -- Draw lines for the rotated cell boundaries (bottom rectangle)
+                DrawLine(corners[1].worldX, corners[1].worldY, corners[1].worldZ, corners[2].worldX, corners[2].worldY, corners[2].worldZ, 255, 0, 0, 255)
+                DrawLine(corners[2].worldX, corners[2].worldY, corners[2].worldZ, corners[3].worldX, corners[3].worldY, corners[3].worldZ, 255, 0, 0, 255)
+                DrawLine(corners[3].worldX, corners[3].worldY, corners[3].worldZ, corners[4].worldX, corners[4].worldY, corners[4].worldZ, 255, 0, 0, 255)
+                DrawLine(corners[4].worldX, corners[4].worldY, corners[4].worldZ, corners[1].worldX, corners[1].worldY, corners[1].worldZ, 255, 0, 0, 255)
+                
+                -- Draw lines for the rotated cell boundaries (top rectangle)
+                DrawLine(corners[5].worldX, corners[5].worldY, corners[5].worldZ, corners[6].worldX, corners[6].worldY, corners[6].worldZ, 255, 0, 0, 255)
+                DrawLine(corners[6].worldX, corners[6].worldY, corners[6].worldZ, corners[7].worldX, corners[7].worldY, corners[7].worldZ, 255, 0, 0, 255)
+                DrawLine(corners[7].worldX, corners[7].worldY, corners[7].worldZ, corners[8].worldX, corners[8].worldY, corners[8].worldZ, 255, 0, 0, 255)
+                DrawLine(corners[8].worldX, corners[8].worldY, corners[8].worldZ, corners[5].worldX, corners[5].worldY, corners[5].worldZ, 255, 0, 0, 255)
                 
                 -- Connect top to bottom
-                DrawLine(minX, minY, minZ, minX, minY, maxZ, 255, 0, 0, 255)
-                DrawLine(maxX, minY, minZ, maxX, minY, maxZ, 255, 0, 0, 255)
-                DrawLine(maxX, maxY, minZ, maxX, maxY, maxZ, 255, 0, 0, 255)
-                DrawLine(minX, maxY, minZ, minX, maxY, maxZ, 255, 0, 0, 255)
+                DrawLine(corners[1].worldX, corners[1].worldY, corners[1].worldZ, corners[5].worldX, corners[5].worldY, corners[5].worldZ, 255, 0, 0, 255)
+                DrawLine(corners[2].worldX, corners[2].worldY, corners[2].worldZ, corners[6].worldX, corners[6].worldY, corners[6].worldZ, 255, 0, 0, 255)
+                DrawLine(corners[3].worldX, corners[3].worldY, corners[3].worldZ, corners[7].worldX, corners[7].worldY, corners[7].worldZ, 255, 0, 0, 255)
+                DrawLine(corners[4].worldX, corners[4].worldY, corners[4].worldZ, corners[8].worldX, corners[8].worldY, corners[8].worldZ, 255, 0, 0, 255)
             end
         end
         
         -- First check: If teleport is not enabled, show dynamite placement prompt
-        if dist < Config.TeleportPoint.radius and not dynamitePlaced and not cooldownActive and not dynamiteCooldownActive and not teleportEnabled then
-            local promptText = CreateVarString(10, 'LITERAL_STRING', "Jail Wall")
-            PromptSetActiveGroupThisFrame(dynamitePromptGroup, promptText)
-            
-            -- Check for key press with placement lock to prevent spamming
-            if PromptHasHoldModeCompleted(placeDynamitePrompt) and not placementLock then
-                local currentTime = GetGameTimer()
-                
-                -- Only allow placement if cooldown has passed
-                if currentTime - lastPlacementTime > placementCooldown then
-                    lastPlacementTime = currentTime
-                    placementLock = true -- Lock placement until the current attempt is resolved
-                    
-                    if HasDynamite() then
-                        TriggerServerEvent("sl_teleport:checkCooldown", "dynamite")
-                    else
-                        Notify(Config.Dynamite.notifications.noItem)
-                        -- Release the lock after a short delay if no dynamite
-                        Citizen.SetTimeout(500, function()
-                            placementLock = false
-                        end)
+        if dist < Config.Dynamite.placementRadius and not dynamitePlaced and not cooldownActive and not dynamiteCooldownActive and not teleportEnabled then
+            -- Check if player is outside the cell (if required by config)
+            local canPlace = true
+            if Config.Dynamite.outsideCellOnly then
+                -- Use the IsPlayerInsideCell function to check if player is inside
+                if IsPlayerInsideCell() then
+                    canPlace = false
+                    -- Only show the message if player is close to the wall
+                    if dist < 2.0 then
+                        DrawText3D(coords.x, coords.y, coords.z + 0.5, Config.Dynamite.notifications.insideCell)
                     end
                 end
             end
             
-            -- Reset placement lock if player is no longer holding the prompt
-            if not PromptIsHoldModeRunning(placeDynamitePrompt) and placementLock then
-                Citizen.SetTimeout(500, function()
-                    placementLock = false
-                end)
+            -- Only show prompt and allow placement if player is outside the cell (when required)
+            if canPlace then
+                local promptText = CreateVarString(10, 'LITERAL_STRING', "Jail Wall")
+                PromptSetActiveGroupThisFrame(dynamitePromptGroup, promptText)
+                
+                -- Check for key press with placement lock to prevent spamming
+                if PromptHasHoldModeCompleted(placeDynamitePrompt) and not placementLock then
+                    local currentTime = GetGameTimer()
+                    
+                    -- Only allow placement if cooldown has passed
+                    if currentTime - lastPlacementTime > placementCooldown then
+                        lastPlacementTime = currentTime
+                        placementLock = true -- Lock placement until the current attempt is resolved
+                        
+                        if HasDynamite() then
+                            TriggerServerEvent("sl_teleport:checkCooldown", "dynamite")
+                        else
+                            Notify(Config.Dynamite.notifications.noItem)
+                            -- Release the lock after a short delay if no dynamite
+                            Citizen.SetTimeout(500, function()
+                                placementLock = false
+                            end)
+                        end
+                    end
+                end
+                
+                -- Reset placement lock if player is no longer holding the prompt
+                if not PromptIsHoldModeRunning(placeDynamitePrompt) and placementLock then
+                    Citizen.SetTimeout(500, function()
+                        placementLock = false
+                    end)
+                end
             end
         end
         
@@ -414,7 +476,7 @@ function DoTeleport()
     SetEntityCoordsNoOffset(playerPed, destCoords.x, destCoords.y, destCoords.z, true, true, true)
     
     -- Set heading to face away from the cell
-    SetEntityHeading(playerPed, 270.0)
+    SetEntityHeading(playerPed, 234.7113) -- Precise heading from screenshot
     
     -- Small wait for the entity to settle
     Citizen.Wait(100)
