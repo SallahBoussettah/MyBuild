@@ -25,11 +25,11 @@ Config.SafeZones = {
         {x = -367.73, y = 787.72, z = 116.26, radius = 8.0},
     },
     -- Stable outside
-    ['Stable'] = {
+    ['Stable Area'] = {
         {x = -392.9447, y = 781.4302, z = 115.7335, radius = 15.0},
     },
     ['Saloon'] = {
-        {x = -325.29, y = 766.24, z = 117.48, radius = 10.0}
+        {x = -308.8820, y = 805.7405, z = 118.9795, radius = 10.0}
     },
     ['Sheriff Office'] = {
         {x = -276.5383, y = 808.6055, z = 119.3790, radius = 8.0}
