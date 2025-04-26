@@ -450,15 +450,15 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
             
             -- Use pcall to safely update menu elements
             pcall(function()
-                -- Update the "finish" element with new total
+            -- Update the "finish" element with new total
                 menu.setElement(#elements, "label", (T.totalToPay or "Total to pay") .. " <br> " .. labelStyle:format("$" .. string.format("%.2f", totalPrice)))
                 menu.setElement(#elements, "desc", (T.pressHereToFinish or "Press here to complete purchase") .. "<br><br><br><br><br>" .. 
-                       divider .. "<br>" .. font .. 
-                       "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
-                       (T.Total or "Total") .. " </span>" .. font .. 
-                       "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
-                       string.format("%.2f", totalPrice) .. "</span><br>" .. divider .. "<br><br>")
-                menu.refresh()
+                           divider .. "<br>" .. font .. 
+                           "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
+                           (T.Total or "Total") .. " </span>" .. font .. 
+                           "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
+                           string.format("%.2f", totalPrice) .. "</span><br>" .. divider .. "<br><br>")
+                    menu.refresh()
             end)
         end
         
@@ -487,7 +487,7 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
                     -- Ensure we have the correct index
                     local actualIndex = itemData.itemIndex
                     if actualIndex and actualIndex > 0 then
-                        TriggerServerEvent("sb_miningstore:BuyItem", storeId, actualIndex, itemData.quantity)
+                    TriggerServerEvent("sb_miningstore:BuyItem", storeId, actualIndex, itemData.quantity)
                         -- Add a small delay between each purchase to avoid race conditions
                         Wait(200)
                     else
@@ -678,30 +678,30 @@ function OpenDirectSellMenu(storeId, category, sellItems, storeCfg)
                 if elementIndex then
                     -- Use pcall to prevent errors when updating menu elements
                     local success = pcall(function()
-                        -- Update item description with selected amount
+                -- Update item description with selected amount
                         menu.setElement(elementIndex, "desc", data.current.info.desc .. "<br><br>you have x" .. data.current.item.count .. 
-                                        "<br><br><br><br><br>" .. divider .. "<br>" .. font .. 
-                                        "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
+                                "<br><br><br><br><br>" .. divider .. "<br>" .. font .. 
+                                "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
                                         (T.Selected or "Selected") .. " </span>" .. font .. 
                                         "<span style='font-family:crock;float:right; font-size: 22px;'>x" .. 
                                         quantity .. "</span><br>" .. divider .. "<br>" ..
                                         "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
                                         (T.Price or "Price per item") .. " </span>" .. font .. 
-                                        "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
+                                "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
                                         string.format("%.2f", data.current.info.sellprice) .. "</span><br>" .. divider .. "<br><br>")
                     end)
-                    
+                
                     -- Handle the total price button update safely
                     if totalButtonIndex and totalButtonIndex > 0 then
                         -- Use pcall to prevent errors
                         pcall(function()
-                            -- Update the "finish" element with new total
+                -- Update the "finish" element with new total
                             menu.setElement(totalButtonIndex, "desc", (T.pressEnterToSell or "Press enter to sell") .. 
                                             "<br><br><br><br><br>" .. divider .. "<br>" .. font .. 
-                                            "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
-                                            (T.Total or "Total") .. " </span>" .. font .. 
-                                            "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
-                                            string.format("%.2f", totalPrice) .. "</span><br>" .. divider .. "<br><br>")
+                               "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
+                               (T.Total or "Total") .. " </span>" .. font .. 
+                               "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
+                               string.format("%.2f", totalPrice) .. "</span><br>" .. divider .. "<br><br>")
                             
                             -- Also update the label of the finish element
                             menu.setElement(totalButtonIndex, "label", (T.totalToReceive or "Total to receive") .. 
