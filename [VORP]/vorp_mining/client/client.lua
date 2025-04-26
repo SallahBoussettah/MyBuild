@@ -6,7 +6,82 @@ local MinedRocks = {}
 local nearby_rocks
 local rockGroup = GetRandomIntInRange(0, 0xffffff)
 local T = Translation.Langs[Lang]
+local Core = exports.vorp_core:GetCore()
 
+-- Mining zones integration
+local sbMiningZonesAvailable = false
+local successRateModifier = 1.0
+
+-- Local configuration for mining zones integration
+local MiningZoneConfig = {
+    StrictRestriction = true,
+    RestrictedMiningMessage = "You can only mine in designated mining areas!",
+    ReducedSuccessOutsideZones = false,
+    OutsideZoneSuccessModifier = 0.3
+}
+
+-- Check if sb_miningzone resource is available
+CreateThread(function()
+    local resourceState = GetResourceState('sb_miningzone')
+    if resourceState == "started" or resourceState == "starting" then
+        sbMiningZonesAvailable = true
+        print("VORP Mining: Detected sb_miningzone resource, mining restrictions will be applied.")
+        
+        -- Try to get configuration from sb_miningzone
+        Wait(1000) -- Wait for resources to be fully loaded
+        MiningZoneConfig.StrictRestriction = exports.sb_miningzone:GetConfigValue("StrictRestriction") or MiningZoneConfig.StrictRestriction
+        MiningZoneConfig.RestrictedMiningMessage = exports.sb_miningzone:GetConfigValue("RestrictedMiningMessage") or MiningZoneConfig.RestrictedMiningMessage
+        MiningZoneConfig.ReducedSuccessOutsideZones = exports.sb_miningzone:GetConfigValue("ReducedSuccessOutsideZones") or MiningZoneConfig.ReducedSuccessOutsideZones
+        MiningZoneConfig.OutsideZoneSuccessModifier = exports.sb_miningzone:GetConfigValue("OutsideZoneSuccessModifier") or MiningZoneConfig.OutsideZoneSuccessModifier
+    end
+end)
+
+-- Function to check if player can mine here (integrates with sb_miningzone)
+local function CanMineHere()
+    if not sbMiningZonesAvailable then
+        return true -- If mining zones resource not available, allow mining everywhere
+    end
+    
+    -- Check if player is in a mining zone by using the export directly
+    local isAllowed = false
+    
+    if exports.sb_miningzone:IsPlayerInMiningZone().inZone then
+        isAllowed = true
+    else
+        if MiningZoneConfig.StrictRestriction then
+            Core.NotifyRightTip(MiningZoneConfig.RestrictedMiningMessage, 4000)
+            isAllowed = false
+        else
+            -- Allow mining but with reduced success rate
+            TriggerEvent("vorp_mining:setSuccessModifier", MiningZoneConfig.OutsideZoneSuccessModifier)
+            isAllowed = true
+        end
+    end
+    
+    return isAllowed
+end
+
+-- Event for sb_miningzone to set success modifier
+RegisterNetEvent("vorp_mining:setSuccessModifier")
+AddEventHandler("vorp_mining:setSuccessModifier", function(modifier)
+    successRateModifier = modifier
+end)
+
+-- Event for sb_miningzone to cancel mining
+RegisterNetEvent("vorp_mining:cancelMining")
+AddEventHandler("vorp_mining:cancelMining", function()
+    if active then
+        active = false
+        removeToolFromPlayer()
+        releasePlayer()
+    end
+end)
+
+-- Add an event to indicate mining has finished
+RegisterNetEvent("vorp_mining:finishedMining")
+AddEventHandler("vorp_mining:finishedMining", function()
+    -- This is just an event for sb_miningzone to catch
+end)
 
 CreateThread(function()
     repeat Wait(1000) until LocalPlayer.state.IsInSession
@@ -157,11 +232,18 @@ end
 
 local function checkStartMineBtnPressed(rock)
     if PromptHasHoldModeCompleted(MinePrompt) then
-        active = true
-        local player = PlayerPedId()
-        SetCurrentPedWeapon(player, GetHashKey("WEAPON_UNARMED"), true, 0, false, false)
-        Wait(500)
-        TriggerServerEvent("vorp_mining:pickaxecheck", rock.vector_coords)
+        -- Check if player can mine here first
+        local canMine = CanMineHere()
+        if canMine then
+            active = true
+            local player = PlayerPedId()
+            SetCurrentPedWeapon(player, GetHashKey("WEAPON_UNARMED"), true, 0, false, false)
+            Wait(500)
+            TriggerServerEvent("vorp_mining:pickaxecheck", rock.vector_coords)
+        else
+            -- Mining not allowed, we already showed a notification in CanMineHere
+            Wait(1000) -- Add delay to prevent spam
+        end
     end
 end
 
@@ -297,8 +379,35 @@ end
 
 
 function GoMine(rock)
+    -- Extra check to make sure we're in a mining zone if required
+    if sbMiningZonesAvailable and MiningZoneConfig.StrictRestriction and not exports.sb_miningzone:IsPlayerInMiningZone().inZone then
+        Core.NotifyRightTip(MiningZoneConfig.RestrictedMiningMessage, 4000)
+        active = false
+        return
+    end
+
     EquipTool('p_pickaxe01x', 'Swing')
     local swingcount = math.random(Config.MinSwing, Config.MaxSwing)
+    
+    -- Create thread to check if player leaves mining zone while mining
+    local keepCheckingMiningZone = true
+    if sbMiningZonesAvailable and MiningZoneConfig.StrictRestriction then
+        CreateThread(function()
+            while keepCheckingMiningZone and active do
+                if not exports.sb_miningzone:IsPlayerInMiningZone().inZone then
+                    Core.NotifyRightTip("You left the mining zone!", 4000)
+                    if active then
+                        active = false
+                        removeToolFromPlayer()
+                        releasePlayer()
+                        keepCheckingMiningZone = false
+                    end
+                end
+                Wait(1000)
+            end
+        end)
+    end
+    
     while hastool == true do
         FreezeEntityPosition(PlayerPedId(), true)
         if IsControlJustReleased(0, Config.StopMiningKey) or IsPedDeadOrDying(PlayerPedId(), false) then
@@ -309,13 +418,25 @@ function GoMine(rock)
             swing = swing + 1
             Anim(ped, 'amb_work@world_human_pickaxe_new@working@male_a@trans', 'pre_swing_trans_after_swing', -1, 0)
             local testplayer = exports["syn_minigame"]:taskBar(randomizer, 7)
+            
+            -- Apply success rate modifier
+            local success = false
             if testplayer == 100 then
+                -- Apply success rate modifier (from mining zones)
+                local chance = math.random(1, 100)
+                if chance <= (100 * successRateModifier) then
+                    success = true
+                end
+            end
+            
+            if success then
                 TriggerServerEvent('vorp_mining:addItem')
             else
                 local minning_fail_txt_index = math.random(1, #T)
                 local minning_fail_txt = T[minning_fail_txt_index]
                 TriggerEvent("vorp:TipRight", minning_fail_txt, 3000)
             end
+            
             Wait(500)
             PromptSetEnabled(UsePrompt, true)
         end
@@ -326,8 +447,12 @@ function GoMine(rock)
         end
         Wait(0)
     end
+    
+    keepCheckingMiningZone = false
     releasePlayer()
     active = false
+    -- Notify sb_miningzone that mining has finished
+    TriggerEvent("vorp_mining:finishedMining")
 end
 
 function EquipTool(toolhash, prompttext, holdtowork)
@@ -437,7 +562,12 @@ RegisterNetEvent("vorp_mining:usePickaxe", function(playerCoords)
     local allowed_rock_model_hashes = convertConfigRocksToHashRegister()
     local restricted_towns = convertConfigTownRestrictionsToHashRegister()
     
-    -- Only allow mining if not in a restricted town
+    -- First check if we can mine in this location (mining zone check)
+    if not CanMineHere() then
+        return -- The notification is already handled in CanMineHere
+    end
+    
+    -- Only allow mining if not in a restricted town (this is VORP Mining's original town restriction)
     if isInRestrictedTown(restricted_towns, GetEntityCoords(player)) then
         Core.NotifyRightTip(T.NotifyLabels.cantMineHere, 3000)
         return

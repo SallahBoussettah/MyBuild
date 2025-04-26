@@ -1,0 +1,1 @@
+{x = -1424.001, y = 1176.164, z = 226.345}, -- Grizzlies Mining Area (example)
