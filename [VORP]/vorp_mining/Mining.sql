@@ -1,4 +1,4 @@
-use `vorpv2`;
+use `1899rp`;
 
 INSERT IGNORE INTO items (`item`, `label`, `limit`, `can_remove`, `type`, `usable`) VALUES 
                          ('goldnugget', 'Gold Nugget', 50, 1, 'item_standard', 0),

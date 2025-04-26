@@ -25,7 +25,7 @@ CreateThread(function()
     -- Wait longer initially to give other resources time to load exports
     Wait(5000) 
     local resourceState = GetResourceState('sb_miningzone')
-    print("Mining Init Debug: sb_miningzone state: ", resourceState) -- DEBUG
+    -- print("Mining Init Debug: sb_miningzone state: ", resourceState) -- DEBUG Commented Out
     if resourceState == "started" or resourceState == "starting" then
         sbMiningZonesAvailable = true
         print("VORP Mining: Detected sb_miningzone resource, mining restrictions will be applied.")
@@ -33,7 +33,7 @@ CreateThread(function()
         -- Try to get configuration from sb_miningzone
         Wait(2000) -- Extra wait before reading exports
         local exportedStrict = exports.sb_miningzone:GetConfigValue("StrictRestriction")
-        print("Mining Init Debug: Exported StrictRestriction value: ", exportedStrict) -- DEBUG
+        -- print("Mining Init Debug: Exported StrictRestriction value: ", exportedStrict) -- DEBUG Commented Out
         MiningZoneConfig.StrictRestriction = exportedStrict or MiningZoneConfig.StrictRestriction
         
         local exportedMessage = exports.sb_miningzone:GetConfigValue("RestrictedMiningMessage")
@@ -45,12 +45,12 @@ CreateThread(function()
         local exportedModifier = exports.sb_miningzone:GetConfigValue("OutsideZoneSuccessModifier")
         MiningZoneConfig.OutsideZoneSuccessModifier = exportedModifier or MiningZoneConfig.OutsideZoneSuccessModifier
         
-        print("Mining Init Debug: Final MiningZoneConfig.StrictRestriction: ", MiningZoneConfig.StrictRestriction) -- DEBUG
+        -- print("Mining Init Debug: Final MiningZoneConfig.StrictRestriction: ", MiningZoneConfig.StrictRestriction) -- DEBUG Commented Out
     else
         sbMiningZonesAvailable = false -- Explicitly set false if resource not found
-        print("Mining Init Debug: sb_miningzone NOT detected or not started.") -- DEBUG
+        -- print("Mining Init Debug: sb_miningzone NOT detected or not started.") -- DEBUG Commented Out
     end
-    print("Mining Init Debug: sbMiningZonesAvailable flag set to: ", sbMiningZonesAvailable) -- DEBUG
+    -- print("Mining Init Debug: sbMiningZonesAvailable flag set to: ", sbMiningZonesAvailable) -- DEBUG Commented Out
 end)
 
 -- Function to check if player can mine here (integrates with sb_miningzone)
@@ -318,14 +318,14 @@ CreateThread(function()
                     can_search_for_rocks = true -- Allow searching only when confirmed inside
                 end
                 -- DEBUG PRINT
-                print("Mining Debug: In Zone? ", is_in_zone)
+                -- print("Mining Debug: In Zone? ", is_in_zone) -- DEBUG Commented Out
             else
                 -- If zone script isn't running or strict mode is OFF, allow searching everywhere (original VORP behavior)
                 can_search_for_rocks = true
             end
 
             -- DEBUG PRINT
-            print("Mining Debug: Can Search For Rocks? ", can_search_for_rocks)
+            -- print("Mining Debug: Can Search For Rocks? ", can_search_for_rocks) -- DEBUG Commented Out
 
             -- Proceed based on the zone check
             if can_search_for_rocks then
@@ -334,7 +334,7 @@ CreateThread(function()
                 local found_rock = getUnMinedNearbyRock(allowed_rock_model_hashes, player, player_coords)
                 
                 -- DEBUG PRINT
-                if found_rock then print("Mining Debug: Found Rock Model Hash: ", found_rock.model_hash) else print("Mining Debug: No Rock Found Nearby") end
+                -- if found_rock then print("Mining Debug: Found Rock Model Hash: ", found_rock.model_hash) else print("Mining Debug: No Rock Found Nearby") end -- DEBUG Commented Out
 
                 if found_rock and not isRockAlreadyMined(found_rock.vector_coords) then
                     -- A valid rock is nearby
