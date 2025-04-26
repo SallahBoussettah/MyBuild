@@ -164,6 +164,7 @@ CreateThread(function()
     local function addItemsDirectSQL()
         -- Define all our mining items
         local miningItems = {
+            -- Items from Mining.sql
             { item = "goldnugget", label = "Gold Nugget", limit = 50 },
             { item = "clay", label = "Copper Bar", limit = 50 },
             { item = "provision_coal", label = "Zinc Bar", limit = 50 },
@@ -172,7 +173,13 @@ CreateThread(function()
             { item = "sulfur", label = "Brass Bar", limit = 50 },
             { item = "stone", label = "Lead Bar", limit = 50 },
             { item = "pickaxe", label = "Pickaxe", limit = 1 },
-            { item = "lantern", label = "Mining Lantern", limit = 1 }
+            { item = "lantern", label = "Mining Lantern", limit = 1 },
+            
+            -- Additional items from vorp_mining/config.lua
+            { item = "coal", label = "Coal", limit = 50 },
+            { item = "nitrite", label = "Nitrite", limit = 50 },
+            { item = "rock", label = "Rocks", limit = 50 },
+            { item = "salt", label = "Salt", limit = 50 }
         }
         
         -- Add each item individually to avoid SQL syntax differences
@@ -663,6 +670,29 @@ AddEventHandler("sb_miningstore:OpenStore", function(storeId)
         print("^3===== DEBUG: PLAYER INVENTORY ITEMS =====^7")
         for _, item in pairs(playerInventory) do
             print("^3Inventory item: ^7" .. item.name .. " (^2" .. item.label .. "^7) - Count: ^2" .. item.count)
+        end
+        
+        -- Create list of items we're specifically looking for
+        local interestingItems = {
+            "goldnugget", "clay", "provision_coal", "copper", "iron", "sulfur", "stone", 
+            "coal", "nitrite", "rock", "salt" -- Added new items from config.lua
+        }
+        
+        -- Debug: Specifically check for mining items we care about
+        print("^3===== DEBUG: CHECKING FOR SPECIFIC MINING ITEMS =====^7")
+        for _, itemName in pairs(interestingItems) do
+            local found = false
+            for _, invItem in pairs(playerInventory) do
+                if invItem.name == itemName then
+                    found = true
+                    print("^2FOUND mining item: ^7" .. itemName .. " (^2" .. invItem.label .. "^7) - Count: ^2" .. invItem.count)
+                    break
+                end
+            end
+            
+            if not found then
+                print("^1MISSING mining item: ^7" .. itemName)
+            end
         end
         
         -- Check which sellable items the player has
