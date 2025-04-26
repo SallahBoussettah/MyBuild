@@ -9,3 +9,4 @@ INSERT IGNORE INTO items (`item`, `label`, `limit`, `can_remove`, `type`, `usabl
                          ('sulfur', 'Brass Bar', 50, 1, 'item_standard', 0),
                          ('stone', 'Lead Bar', 50, 1, 'item_standard', 0),
                          ('pickaxe', 'Pickaxe', 1, 1, 'item_standard', 0);
+

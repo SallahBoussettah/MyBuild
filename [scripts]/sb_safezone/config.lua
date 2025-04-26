@@ -32,7 +32,13 @@ Config.SafeZones = {
         {x = -308.8820, y = 805.7405, z = 118.9795, radius = 10.0}
     },
     ['Sheriff Office'] = {
-        {x = -276.5383, y = 808.6055, z = 119.3790, radius = 8.0}
-    }
+        {x = -275.1652, y = 807.4158, z = 119.3746, radius = 6.3}
+    },
+    ['Gunsmith'] = {
+        {x = -279.4550, y = 780.7059, z = 119.5040, radius = 6}
+    },
+    ['Bank'] = {
+        {x = -306.3336, y = 771.5721, z = 118.7066, radius = 10}
+    },
     -- Add more zones as needed
 } 

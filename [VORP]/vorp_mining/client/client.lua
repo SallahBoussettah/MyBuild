@@ -430,3 +430,29 @@ AddEventHandler('onResourceStop', function(resourceName)
     releasePlayer()
     removeMiningPrompt()
 end)
+
+RegisterNetEvent("vorp_mining:usePickaxe", function(playerCoords)
+    -- Check if player is near a rock
+    local player = PlayerPedId()
+    local allowed_rock_model_hashes = convertConfigRocksToHashRegister()
+    local restricted_towns = convertConfigTownRestrictionsToHashRegister()
+    
+    -- Only allow mining if not in a restricted town
+    if isInRestrictedTown(restricted_towns, GetEntityCoords(player)) then
+        Core.NotifyRightTip(T.NotifyLabels.cantMineHere, 3000)
+        return
+    end
+    
+    local rock = getUnMinedNearbyRock(allowed_rock_model_hashes, player)
+    
+    if rock then
+        -- If rock found, proceed with mining
+        if not active then
+            active = true
+            TriggerServerEvent("vorp_mining:pickaxecheck", rock.vector_coords)
+        end
+    else
+        -- No suitable rock found nearby
+        Core.NotifyRightTip(T.NotifyLabels.noRocksNearby, 3000)
+    end
+end)

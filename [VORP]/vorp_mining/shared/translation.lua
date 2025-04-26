@@ -28,6 +28,8 @@ Translation.Langs = {
             notHavePickaxe = "You don't have an pickaxe ",
             descDurabilityOne = "Durability ",
             descDurabilityTwo = "Durability ",
+            noRocksNearby = "There are no suitable rocks nearby to mine",
+            cantMineHere = "You cannot mine in this area",
         },
     },
     Italiano = {
