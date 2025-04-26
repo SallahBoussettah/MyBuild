@@ -55,7 +55,7 @@ Config.MiningStores = {
             Allowed = true,
             Model = "U_M_M_BHT_MINEFOREMAN",
         },
-        storeName = "Grizzlies Mining Store",
+        storeName = "Grizzlies Store",
         PromptName = "mining store",
         distanceOpenStore = 3.0,
         AllowedJobs = {},
@@ -73,7 +73,45 @@ Config.MiningStores = {
         StoreOpen = 6, -- 6 AM
         StoreClose = 22, -- 10 PM
         DynamicStore = true,
-    }
+    },
+    MountHagenStore = {
+        isDeactivated = false,
+        useRandomLocation = false,
+        possibleLocations = {
+            OpenMenu = {},
+            Npcs = {}
+        },
+        Blip = {
+            Allowed = true,
+            Name = "Mount Hagen Mining Store",
+            sprite = 1475879922,
+            Pos = vector3(-5966.8169, -3169.2676, -4.9505),
+        },
+        Npc = {
+            Pos = vector4(-5966.8169, -3169.2676, -4.9505, 145.0206),
+            distanceRemoveNpc = 20.0,
+            Allowed = true,
+            Model = "U_M_M_BHT_MINEFOREMAN",
+        },
+        storeName = "Mount Hagen Store",
+        PromptName = "mining store",
+        distanceOpenStore = 3.0,
+        AllowedJobs = {},
+        JobGrade = 0,
+        category = {
+            { label = "Tools", Type = "tools", desc = "Mining equipment", img = "butcher_table_production" },
+            { label = "Ore", Type = "ore", desc = "Mining ores and materials", img = "provision_gold_nugget" },
+        },
+        storeType = {
+            { label = "Buy", Type = "buy", desc = "Buy mining equipment", img = "consumable_bread_roll" },
+            { label = "Sell", Type = "sell", desc = "Sell mining materials", img = "butcher_table_production" },
+        },
+        StoreHoursAllowed = true,
+        RandomPrices = true,
+        StoreOpen = 6, -- 6 AM
+        StoreClose = 24, -- 12 PM
+        DynamicStore = true,
+    },
 }
 
 -- Mining zones definitions
@@ -82,39 +120,23 @@ Config.MiningZones = {
     {
         coords = {x = -1421.2853, y = 1171.9752, z = 226.3315}, -- Grizzlies Mining Area (example)
         radius = 20.0,
-        name = "Grizzlies Mining Area1",
+        name = "Grizzlies Mining Area",
         description = "A prime mining location rich with various ores.",
         allow_mining = true,
         blip = true -- Show blip for this zone
     },
     {
         coords = {x = 2276.6150, y = 1060.7690, z = 78.6585}, -- Annesburg Mine (example)
-        radius = 150.0,
-        name = "Annesburg Mining Area 1",
-        description = "The official Annesburg mining operation.",
-        allow_mining = true,
-        blip = true
-    },
-    {
-        coords = {x = 2312.1311, y = 1071.8284, z = 87.6673}, -- Annesburg Mine (example)
-        radius = 100.0,
-        name = "Annesburg Mining Area 2",
-        description = "The official Annesburg mining operation.",
-        allow_mining = true,
-        blip = true
-    },
-    {
-        coords = {x = 2284.0823, y = 1082.8972, z = 83.5878}, -- Annesburg Mine (example)
-        radius = 100.0,
-        name = "Annesburg Mining Area 3",
+        radius = 20.0,
+        name = "Annesburg Mining",
         description = "The official Annesburg mining operation.",
         allow_mining = true,
         blip = true
     },
     {
         coords = {x = -5977.8154, y = -3164.4519, z = -3.8800}, -- Mount Hagen (example)
-        radius = 80.0,
-        name = "Mount Hagen Mining Site",
+        radius = 10.0,
+        name = "Mount Hagen Mining",
         description = "High altitude mining site with premium ore deposits.",
         allow_mining = true,
         blip = true

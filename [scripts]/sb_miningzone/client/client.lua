@@ -341,6 +341,7 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
         end
     end
     
+    -- Remove debug print
     local elements = {}
     local buyTable = {}
     local tempElements = {}
@@ -348,10 +349,12 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
     -- Filter items by category
     for i, item in ipairs(buyItems) do
         if item.category == category and item.itemName ~= "mininghelmet" then -- Skip the helmet
-            -- Calculate buy price based on configuration
+            -- Always use the fixed buyprice from config, ignore RandomPrices setting
             local itemPrice = item.buyprice
-            if storeCfg.RandomPrices then
-                itemPrice = item.randomprice
+            
+            -- Safety check in case the price is somehow nil
+            if not itemPrice then
+                itemPrice = 0
             end
             
             -- Format price with proper decimals
@@ -365,7 +368,12 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
                 max = item.itemLimit or 100,
                 type = "slider",
                 action = "buy",
-                info = item,
+                info = {
+                    itemName = item.itemName,
+                    itemLabel = item.itemLabel,
+                    buyprice = itemPrice, -- Store the fixed price here
+                    desc = item.desc or "No description available."
+                },
                 itemIndex = i, -- Store the actual index in the original table
                 index = item.itemName,
                 desc = item.desc .. "<br><br><br><br><br>" .. divider .. "<br>" .. font .. 
@@ -440,15 +448,18 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
                 totalPrice = totalPrice + item.price
             end
             
-            -- Update the "finish" element with new total
-            menu.setElement(#elements, "label", (T.totalToPay or "Total to pay") .. " <br> " .. labelStyle:format("$" .. string.format("%.2f", totalPrice)))
-            menu.setElement(#elements, "desc", (T.pressHereToFinish or "Press here to complete purchase") .. "<br><br><br><br><br>" .. 
-                   divider .. "<br>" .. font .. 
-                   "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
-                   (T.Total or "Total") .. " </span>" .. font .. 
-                   "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
-                   string.format("%.2f", totalPrice) .. "</span><br>" .. divider .. "<br><br>")
-            menu.refresh()
+            -- Use pcall to safely update menu elements
+            pcall(function()
+                -- Update the "finish" element with new total
+                menu.setElement(#elements, "label", (T.totalToPay or "Total to pay") .. " <br> " .. labelStyle:format("$" .. string.format("%.2f", totalPrice)))
+                menu.setElement(#elements, "desc", (T.pressHereToFinish or "Press here to complete purchase") .. "<br><br><br><br><br>" .. 
+                       divider .. "<br>" .. font .. 
+                       "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
+                       (T.Total or "Total") .. " </span>" .. font .. 
+                       "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
+                       string.format("%.2f", totalPrice) .. "</span><br>" .. divider .. "<br><br>")
+                menu.refresh()
+            end)
         end
         
         if data.current.value == "finish" then
@@ -469,16 +480,19 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
                 return -- Don't close menu, just return
             end
             
-            -- Process purchases
+            -- Process purchases safely
             for itemName, itemData in pairs(buyTable) do
                 if itemData.quantity > 0 then
                     hasItems = true
-                    -- Add detailed debug info and ensure we have the correct index
+                    -- Ensure we have the correct index
                     local actualIndex = itemData.itemIndex
-                    TriggerServerEvent("sb_miningstore:BuyItem", storeId, actualIndex, itemData.quantity)
-                    
-                    -- Add a small delay between each purchase to avoid race conditions
-                    Wait(200)
+                    if actualIndex and actualIndex > 0 then
+                        TriggerServerEvent("sb_miningstore:BuyItem", storeId, actualIndex, itemData.quantity)
+                        -- Add a small delay between each purchase to avoid race conditions
+                        Wait(200)
+                    else
+                        VORPcore.NotifyRightTip("Error finding item " .. itemName, 3000)
+                    end
                 end
             end
         end
@@ -498,99 +512,77 @@ function OpenDirectSellMenu(storeId, category, sellItems, storeCfg)
     local tempElements = {}
     local tempCategories = {}
     local count = 0
+    local itemIndexMapping = {} -- Maps item names to their indices in the menu
     
     -- Use the callback to get player inventory
     VORPcore.Callback.TriggerAsync("sb_miningzone:getInventoryItems", function(playerItems)
-        if playerItems then
-            -- Get all items in this category
-            for idx, item in ipairs(sellItems) do
-                if item.category == category then
-                    -- Simple check if player has this item
-                    local playerItem = playerItems[item.itemName]
-                    if playerItem and playerItem.count > 0 then
-                        -- Calculate sell price based on configuration
-                        local itemPrice = item.sellprice
-                        if storeCfg.RandomPrices then
-                            itemPrice = item.randomprice
-                        end
-                        
-                        -- Setup slider options
-                        local sliderOptions = {}
-                        for i = 0, playerItem.count do
-                            sliderOptions[#sliderOptions + 1] = i
-                        end
-                        
-                        -- Format price with proper decimals
-                        local formattedPrice = string.format("%.2f", itemPrice)
-                        
-                        -- Add the item to our elements list for the menu
-                        tempElements[#tempElements + 1] = {
-                            label = string.format("<span style='color: white;'>%s</span>", item.itemLabel) .. "<br>" .. 
-                                    string.format("<span style='color: gray;'>%s $%s " .. (T.each or "each") .. "</span>", T.worth or "Worth", formattedPrice),
-                            value = 0,  -- Default to 0 (none selected)
-                            item = playerItem,
-                            info = {
-                                itemName = item.itemName,
-                                itemLabel = item.itemLabel,
-                                sellprice = itemPrice,
-                                desc = item.desc or "No description available."
-                            },
-                            itemIndex = idx, -- Save the item index for later use
-                            type = "slider",
-                            min = 0,
-                            max = playerItem.count,
-                            hop = 1,
-                            options = sliderOptions,
-                            action = "sell",
-                            desc = item.desc .. "<br><br>you have x" .. playerItem.count .. 
-                                   "<br><br> " .. (T.Price or "Price") .. " $" .. formattedPrice .. 
-                                   "<br><br><br><br><br>" .. divider .. "<br>" .. font .. 
-                                   "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
-                                   (T.Total or "Total") .. " </span>" .. font .. 
-                                   "<span style='font-family:crock;float:right; font-size: 22px;'>$0.00</span><br>" .. 
-                                   divider .. "<br><br>"
-                        }
-                        count = count + 1
+        if not playerItems then
+            VORPcore.NotifyRightTip("Error retrieving inventory", 3000)
+            CloseStoreMenu()
+            return
+        end
+            
+        -- Get all items in this category
+        for idx, item in ipairs(sellItems) do
+            if item.category == category then
+                -- Simple check if player has this item
+                local playerItem = playerItems[item.itemName]
+                if playerItem and playerItem.count > 0 then
+                    -- Always use the fixed sellprice from config, ignore RandomPrices setting
+                    local itemPrice = item.sellprice
+                    
+                    -- Safety check in case the price is somehow nil
+                    if not itemPrice then
+                        itemPrice = 0
                     end
+                    
+                    -- Setup slider options
+                    local sliderOptions = {}
+                    for i = 0, playerItem.count do
+                        sliderOptions[#sliderOptions + 1] = i
+                    end
+                    
+                    -- Format price with proper decimals
+                    local formattedPrice = string.format("%.2f", itemPrice)
+                    
+                    -- Add the item to our elements list for the menu
+                    tempElements[#tempElements + 1] = {
+                        label = string.format("<span style='color: white;'>%s</span>", item.itemLabel) .. "<br>" .. 
+                                string.format("<span style='color: gray;'>%s $%s " .. (T.each or "each") .. "</span>", T.worth or "Worth", formattedPrice),
+                        value = 0,  -- Default to 0 (none selected)
+                        item = playerItem,
+                        info = {
+                            itemName = item.itemName,
+                            itemLabel = item.itemLabel,
+                            sellprice = itemPrice, -- Use the fixed price
+                            desc = item.desc or "No description available."
+                        },
+                        serverIndex = idx, -- Save the item index for server reference
+                        type = "slider",
+                        min = 0,
+                        max = playerItem.count,
+                        hop = 1,
+                        options = sliderOptions,
+                        action = "sell",
+                        desc = item.desc .. "<br><br>you have x" .. playerItem.count .. 
+                               "<br><br><br><br><br>" .. divider .. "<br>" .. font .. 
+                               "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
+                               (T.Available or "Available") .. " </span>" .. font .. 
+                               "<span style='font-family:crock;float:right; font-size: 22px;'>x" .. 
+                               playerItem.count .. "</span><br>" .. divider .. "<br><br>"
+                    }
+                    count = count + 1
                 end
             end
-            
-            -- Sort elements alphabetically by label
-            table.sort(tempElements, function(a, b)
-                return a.label < b.label
-            end)
-            
-            -- Copy sorted elements to final elements table
-            for _, v in ipairs(tempElements) do
-                elements[#elements + 1] = v
-            end
-            
-            -- Add total element and sell button if we have items
-            local ctp = ""
-            if count > 0 then
-                ctp = "<span style='color: green;'>$</span>"
-            end
-            
-            -- Add a FINISH button if we have elements
-            if #elements > 0 then
-                elements[#elements + 1] = {
-                    label = (T.totalToReceive or "Total to receive") .. " <br> " .. ctp .. "0",
-                    value = "sell",
-                    info = "finish",
-                    desc = (T.pressEnterToSell or "Press enter to sell") .. "<br><br><br><br><br>" .. 
-                           divider .. "<br>" .. font .. 
-                           "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
-                           (T.Total or "Total") .. " </span>" .. font .. 
-                           "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
-                           "0.00" .. "</span><br>" .. divider .. "<br><br>"
-                }
-            else
-                elements[#elements + 1] = {
-                    label = "No items to sell in this category",
-                    value = "none",
-                    desc = "You don't have any items that can be sold in this category."
-                }
-            end
+        end
+        
+        if count == 0 then
+            -- No items to sell
+            elements[#elements + 1] = {
+                label = "No items to sell in this category",
+                value = "none",
+                desc = "You don't have any items that can be sold in this category."
+            }
             
             MenuData.Open('default', GetCurrentResourceName(), 'MiningStoreSell_' .. storeId .. category, {
                 title = storeCfg.storeName,
@@ -603,109 +595,156 @@ function OpenDirectSellMenu(storeId, category, sellItems, storeCfg)
                 if (data.current == "backup") then
                     return OpenStoreMainMenu(storeId, buyItems, sellItems, storeCfg)
                 end
-                
-                if data.current.action == "sell" then
-                    -- Handle quantity selection
-                    local itemName = data.current.info.itemName
-                    local quantity = data.current.value
-                    local sellPrice = data.current.info.sellprice * quantity
-                    
-                    -- Update sellTable with selected items
-                    if quantity > 0 then
-                        sellTable[itemName] = {
-                            itemIndex = data.current.itemIndex, -- Use the stored index
-                            quantity = quantity,
-                            price = sellPrice
-                        }
-                    else
-                        sellTable[itemName] = nil
-                    end
-                    
-                    -- Update total price display
-                    local totalPrice = 0
-                    for _, item in pairs(sellTable) do
-                        totalPrice = totalPrice + item.price
-                    end
-                    
-                    -- Update item description with selected amount
-                    menu.setElement(data.current.index, "desc", data.current.info.desc .. "<br><br>you have x" .. data.current.item.count .. 
-                                    "<br><br> " .. (T.Price or "Price") .. "$" .. string.format("%.2f", sellPrice) .. 
-                                    "<br><br><br><br><br>" .. divider .. "<br>" .. font .. 
-                                    "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
-                                    (T.Total or "Total") .. " </span>" .. font .. 
-                                    "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
-                                    string.format("%.2f", sellPrice) .. "</span><br>" .. divider .. "<br><br>")
-                    
-                    -- Update the "finish" element with new total
-                    menu.setElement(#elements, "desc", (T.pressEnterToSell or "Press enter to sell") .. "<br><br><br><br><br>" .. 
-                                    divider .. "<br>" .. font .. 
-                                    "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
-                                    (T.Total or "Total") .. " </span>" .. font .. 
-                                    "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
-                                    string.format("%.2f", totalPrice) .. "</span><br>" .. divider .. "<br><br>")
-                    
-                    -- Also update the label of the finish element
-                    menu.setElement(#elements, "label", (T.totalToReceive or "Total to receive") .. " <br> <span style='color: green;'>$" .. string.format("%.2f", totalPrice) .. "</span>")
-                    
-                    menu.refresh()
-                end
-                
-                if data.current.value == "sell" then
-                    -- Process sale
-                    local hasItems = false
-                    local itemsSold = 0
-                    local itemsToSell = 0
-                    
-                    -- First count how many items we're selling
-                    for _, itemData in pairs(sellTable) do
-                        if itemData.quantity > 0 then
-                            itemsToSell = itemsToSell + 1
-                        end
-                    end
-                    
-                    -- Early check if we're not selling anything
-                    if itemsToSell == 0 then
-                        VORPcore.NotifyRightTip(T.notSelectedItem or "You haven't selected any items to sell", 3000)
-                        return -- Don't close menu, just return
-                    end
-                    
-                    -- Process sale in a safer way
-                    for itemName, itemData in pairs(sellTable) do
-                        if itemData.quantity > 0 then
-                            hasItems = true
-                            
-                            -- Find the correct index in sellItems
-                            local actualIndex = 0
-                            for idx, item in ipairs(sellItems) do
-                                if item.itemName == itemName then
-                                    actualIndex = idx
-                                    break
-                                end
-                            end
-                            
-                            -- Check if we found a valid index
-                            if actualIndex > 0 then
-                                TriggerServerEvent("sb_miningstore:SellItem", storeId, actualIndex, itemData.quantity)
-                                
-                                -- Increment our counter for sold items
-                                itemsSold = itemsSold + 1
-                                
-                                -- Add a wait between each item sold
-                                Wait(200)
-                            else
-                                VORPcore.NotifyRightTip("Error finding item " .. itemName, 3000)
-                            end
-                        end
-                    end
-                end
             end, function(data, menu)
                 -- When menu is closed
                 CloseStoreMenu()
             end)
-        else
-            VORPcore.NotifyRightTip("Error retrieving inventory", 3000)
-            CloseStoreMenu()
+            return
         end
+        
+        -- Sort elements alphabetically by label
+        table.sort(tempElements, function(a, b)
+            return a.label < b.label
+        end)
+        
+        -- Copy sorted elements to final elements table
+        for i, v in ipairs(tempElements) do
+            elements[#elements + 1] = v
+            itemIndexMapping[v.info.itemName] = #elements -- Store the menu index for each item
+        end
+        
+        -- Add "Total to receive" button (this is the final sell button)
+        elements[#elements + 1] = {
+            label = (T.totalToReceive or "Total to receive") .. " <br> <span style='color: green;'>$0.00</span>",
+            value = "sell",
+            info = "finish",
+            desc = (T.pressEnterToSell or "Press enter to sell") .. "<br><br><br><br><br>" .. 
+                   divider .. "<br>" .. font .. 
+                   "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
+                   (T.Total or "Total") .. " </span>" .. font .. 
+                   "<span style='font-family:crock;float:right; font-size: 22px;'>$0.00</span><br>" .. 
+                   divider .. "<br><br>"
+        }
+        
+        -- Store the total button index for easy reference
+        local totalButtonIndex = #elements
+        
+        -- Open the menu
+        MenuData.Open('default', GetCurrentResourceName(), 'MiningStoreSell_' .. storeId .. category, {
+            title = storeCfg.storeName,
+            subtext = subMenuStyle:format(T.sellmenu or "Sell Mining Resources"),
+            align = "left",
+            elements = elements,
+            itemHeight = "4vh",
+            lastmenu = "MiningStoreCategory"
+        }, function(data, menu)
+            -- Handle menu selection events safely
+            if not data or not data.current then return end
+            
+            if (data.current == "backup") then
+                CloseStoreMenu()
+                Wait(100)
+                OpenStoreMainMenu(storeId, buyItems, sellItems, storeCfg)
+                return
+            end
+            
+            -- Handle slider changes for items
+            if data.current.action == "sell" then
+                -- Handle quantity selection
+                local itemName = data.current.info.itemName
+                local quantity = data.current.value
+                local sellPrice = data.current.info.sellprice * quantity
+                
+                -- Update sellTable with selected items
+                if quantity > 0 then
+                    sellTable[itemName] = {
+                        itemIndex = data.current.serverIndex,
+                        quantity = quantity,
+                        price = sellPrice
+                    }
+                else
+                    sellTable[itemName] = nil
+                end
+                
+                -- Update total price display
+                local totalPrice = 0
+                for _, item in pairs(sellTable) do
+                    totalPrice = totalPrice + item.price
+                end
+                
+                -- Get the element index for this item
+                local elementIndex = itemIndexMapping[itemName]
+                
+                if elementIndex then
+                    -- Use pcall to prevent errors when updating menu elements
+                    local success = pcall(function()
+                        -- Update item description with selected amount
+                        menu.setElement(elementIndex, "desc", data.current.info.desc .. "<br><br>you have x" .. data.current.item.count .. 
+                                        "<br><br><br><br><br>" .. divider .. "<br>" .. font .. 
+                                        "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
+                                        (T.Selected or "Selected") .. " </span>" .. font .. 
+                                        "<span style='font-family:crock;float:right; font-size: 22px;'>x" .. 
+                                        quantity .. "</span><br>" .. divider .. "<br>" ..
+                                        "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
+                                        (T.Price or "Price per item") .. " </span>" .. font .. 
+                                        "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
+                                        string.format("%.2f", data.current.info.sellprice) .. "</span><br>" .. divider .. "<br><br>")
+                    end)
+                    
+                    -- Handle the total price button update safely
+                    if totalButtonIndex and totalButtonIndex > 0 then
+                        -- Use pcall to prevent errors
+                        pcall(function()
+                            -- Update the "finish" element with new total
+                            menu.setElement(totalButtonIndex, "desc", (T.pressEnterToSell or "Press enter to sell") .. 
+                                            "<br><br><br><br><br>" .. divider .. "<br>" .. font .. 
+                                            "<span style='font-family:crock; float:left; font-size: 22px;'>" .. 
+                                            (T.Total or "Total") .. " </span>" .. font .. 
+                                            "<span style='font-family:crock;float:right; font-size: 22px;'>$" .. 
+                                            string.format("%.2f", totalPrice) .. "</span><br>" .. divider .. "<br><br>")
+                            
+                            -- Also update the label of the finish element
+                            menu.setElement(totalButtonIndex, "label", (T.totalToReceive or "Total to receive") .. 
+                                            " <br> <span style='color: green;'>$" .. string.format("%.2f", totalPrice) .. "</span>")
+                        end)
+                    end
+                    
+                    -- Refresh the menu safely
+                    pcall(function() menu.refresh() end)
+                end
+            end
+            
+            -- Handle the sell button press
+            if data.current.value == "sell" then
+                -- Process sale
+                local itemsToSell = 0
+                
+                -- Count items to sell
+                for _, itemData in pairs(sellTable) do
+                    if itemData.quantity > 0 then
+                        itemsToSell = itemsToSell + 1
+                    end
+                end
+                
+                -- Check if we're selling anything
+                if itemsToSell == 0 then
+                    VORPcore.NotifyRightTip(T.notSelectedItem or "You haven't selected any items to sell", 3000)
+                    return -- Don't close menu, just return
+                end
+                
+                -- Process each item for sale
+                for itemName, itemData in pairs(sellTable) do
+                    if itemData.quantity > 0 and itemData.itemIndex > 0 then
+                        -- Trigger the server event to process the sale
+                        TriggerServerEvent("sb_miningstore:SellItem", storeId, itemData.itemIndex, itemData.quantity)
+                        Wait(200) -- Add a delay between sales to avoid race conditions
+                    end
+                end
+            end
+        end, function(data, menu)
+            -- When menu is closed
+            CloseStoreMenu()
+        end)
     end)
 end
 
@@ -736,9 +775,10 @@ AddEventHandler("sb_miningstore:BuyItemResponse", function(success, message)
     end
 end)
 
--- Function to close store menu
+-- Function to close store menu with better error handling
 function CloseStoreMenu()
-    MenuData.CloseAll()
+    -- Use pcall to safely close all menus
+    pcall(function() MenuData.CloseAll() end)
     isInMenu = false
     Config.UI(false)
 end

@@ -29,5 +29,30 @@ Config.BuyItems = {
             category = "tools",
             itemLimit = 3,
         }
-    }
+    },
+    MountHagenStore = {
+        -- Tools Category
+        {
+            itemLabel = "Pickaxe",
+            itemName = "pickaxe",
+            currencyType = "cash",
+            buyprice = 35,
+            randomprice = math.random(40, 50),
+            desc = "A sturdy pickaxe for mining ore deposits.\nLimit: 1 per in-game day.",
+            category = "tools",
+            itemLimit = 1, -- Limit the number that can be purchased at once
+        },
+        
+        -- Add additional mining tools here as needed
+        {
+            itemLabel = "Mining Lantern",
+            itemName = "lantern",
+            currencyType = "cash",
+            buyprice = 10,
+            randomprice = math.random(12, 18),
+            desc = "A lantern to light your way in dark mining tunnels. But ofc you don't need here.",
+            category = "tools",
+            itemLimit = 3,
+        }
+    },
 } 
