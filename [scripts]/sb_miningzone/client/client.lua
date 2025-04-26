@@ -2,7 +2,6 @@ local VORPcore = exports.vorp_core:GetCore()
 local blips = {}
 local inMiningZone = false
 local currentZone = nil
-local debugMode = Config.Debug
 local playerMiningState = "idle" -- Can be: idle, mining
 local T = TranslationStores.Langs.English
 local storePrompt = {}
@@ -58,56 +57,11 @@ local function CreateMiningZoneBlips()
     end
 end
 
--- Function to create zone markers for debug purposes
-local function CreateDebugZoneMarkers()
-    if not Config.Debug then return end
-    
-    CreateThread(function()
-        while debugMode do
-            Wait(0)
-            local playerPed = PlayerPedId()
-            local playerCoords = GetEntityCoords(playerPed)
-            
-            for _, zone in pairs(Config.MiningZones) do
-                local zoneCenter = vector3(zone.coords.x, zone.coords.y, zone.coords.z)
-                local distance = #(playerCoords - zoneCenter)
-                
-                -- Draw a marker at the zone center - Using a more visible color and style
-                Citizen.InvokeNative(0x2A32FAA57B937173, 0x50638AB9, zone.coords.x, zone.coords.y, zone.coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, zone.radius, zone.radius, zone.radius, 0, 255, 255, 150, false, false, 2, false, false, false, false)
-                
-                -- Draw a central marker that's easier to spot
-                Citizen.InvokeNative(0x2A32FAA57B937173, 0x50638AB9, zone.coords.x, zone.coords.y, zone.coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 2.0, 255, 0, 0, 255, false, false, 2, false, false, false, false)
-                
-                -- Show debug text with zone info for nearby zones
-                if distance <= 200.0 then
-                    local onScreen, x, y = GetScreenCoordFromWorldCoord(zone.coords.x, zone.coords.y, zone.coords.z + 2.0)
-                    if onScreen then
-                        SetTextScale(0.35, 0.35)
-                        SetTextFontForCurrentCommand(1)
-                        SetTextColor(255, 255, 0, 255) -- Brighter yellow text
-                        local str = "Mining Zone: " .. zone.name
-                        Citizen.InvokeNative(0xADA9255D, 1)
-                        DisplayText(CreateVarString(10, "LITERAL_STRING", str), x, y)
-                        SetTextColor(255, 255, 255, 255)
-                        SetTextScale(0.25, 0.25)
-                        DisplayText(CreateVarString(10, "LITERAL_STRING", "Radius: " .. zone.radius .. "m"), x, y + 0.0175)
-                        
-                        -- Add distance info
-                        SetTextColor(100, 255, 100, 255)
-                        DisplayText(CreateVarString(10, "LITERAL_STRING", "Distance: " .. math.floor(distance) .. "m"), x, y + 0.035)
-                    end
-                end
-            end
-        end
-    end)
-end
-
 -- Thread to continuously check if player is in a mining zone
 CreateThread(function()
     Wait(2000) -- Give time for configs to load
     
     CreateMiningZoneBlips()
-    -- CreateDebugZoneMarkers() -- Commented out to disable visual markers
     
     while true do
         local zoneInfo = IsPlayerInMiningZone()
@@ -120,18 +74,12 @@ CreateThread(function()
             if inMiningZone then
                 TriggerEvent("sb_miningzone:enteredMiningZone", currentZone)
                 VORPcore.NotifyRightTip("Entered Mining Zone: " .. currentZone.name, 4000)
-                if debugMode then
-                    print("Entered mining zone: " .. currentZone.name)
-                end
             else
                 TriggerEvent("sb_miningzone:exitedMiningZone")
                 if currentZone then
                     VORPcore.NotifyRightTip("Exited Mining Zone: " .. currentZone.name, 4000)
                 else
                     VORPcore.NotifyRightTip("Exited Mining Zone", 4000)
-                end
-                if debugMode then
-                    print("Exited mining zone")
                 end
             end
         end
@@ -204,8 +152,8 @@ local function OpenStoreMenu(storeName, storeData)
     -- Hide HUD elements while in menu if needed
     Config.UI(true)
     
-    -- Log that we're opening the store
-    print("Opening store: " .. storeName)
+    -- Notify player about pickaxe purchase limit
+    VORPcore.NotifyRightTip(T.pickaxeLimitReminder, 5000)
     
     -- Trigger the server event to open the store menu
     TriggerServerEvent("sb_miningstore:OpenStore", storeName)
@@ -307,38 +255,28 @@ end)
 -- Event to open store menu from server
 RegisterNetEvent("sb_miningstore:OpenStoreMenu")
 AddEventHandler("sb_miningstore:OpenStoreMenu", function(storeId, buyItems, sellItems, storeCfg)
-    -- Print received data for debugging
-    print("Received store menu data: " .. storeId)
-    
     -- Replace the notification with actual menu implementation
     isInMenu = true
     Config.UI(true)
     
     -- If buyItems or sellItems are nil, use Config as fallback
     if not buyItems then
-        print("buyItems is nil, using Config.BuyItems as fallback")
         buyItems = Config.BuyItems[storeId] or {}
         
         -- Additional safety check
         if not buyItems then
-            print("ERROR: Config.BuyItems[" .. storeId .. "] is nil!")
             buyItems = {}  -- Initialize as empty table to prevent errors
         end
     end
     
     if not sellItems then
-        print("sellItems is nil, using Config.SellItems as fallback")
         sellItems = Config.SellItems[storeId] or {}
         
         -- Additional safety check
         if not sellItems then
-            print("ERROR: Config.SellItems[" .. storeId .. "] is nil!")
             sellItems = {}  -- Initialize as empty table to prevent errors
         end
     end
-    
-    print("buyItems count: " .. #buyItems)
-    print("sellItems count: " .. #sellItems)
     
     OpenStoreMainMenu(storeId, buyItems, sellItems, storeCfg)
 end)
@@ -349,12 +287,10 @@ function OpenStoreMainMenu(storeId, buyItems, sellItems, storeCfg)
     
     -- Make sure buyItems and sellItems are not nil
     if not buyItems then
-        print("buyItems is nil in OpenStoreMainMenu, using Config.BuyItems as fallback")
         buyItems = Config.BuyItems[storeId] or {}
     end
     
     if not sellItems then
-        print("sellItems is nil in OpenStoreMainMenu, using Config.SellItems as fallback")
         sellItems = Config.SellItems[storeId] or {}
     end
     
@@ -378,11 +314,9 @@ function OpenStoreMainMenu(storeId, buyItems, sellItems, storeCfg)
         -- When an option is selected
         if data.current.value == "tools" then
             -- For tools, directly show buy menu
-            print("Selected tools category, opening buy menu")
             OpenDirectBuyMenu(storeId, "tools", buyItems, storeCfg)
         else
             -- For ore, show the sell interface
-            print("Selected ore category, opening sell menu")
             OpenDirectSellMenu(storeId, "ore", sellItems, storeCfg)
         end
     end, function(data, menu)
@@ -397,12 +331,10 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
     
     -- Ensure buyItems is not nil by using Config as a fallback
     if not buyItems then
-        print("buyItems is nil in OpenDirectBuyMenu, using Config.BuyItems as fallback")
         buyItems = Config.BuyItems[storeId] or {}
         
         -- If still nil or empty after fallback, show an error
         if not buyItems then
-            print("ERROR: Config.BuyItems[" .. storeId .. "] is nil!")
             VORPcore.NotifyRightTip("Store has no items to sell", 3000)
             CloseStoreMenu()
             return
@@ -412,10 +344,6 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
     local elements = {}
     local buyTable = {}
     local tempElements = {}
-    
-    -- Debug information
-    print("Opening Direct Buy Menu for category: " .. category)
-    print("Number of buyable items in config: " .. #buyItems)
     
     -- Filter items by category
     for i, item in ipairs(buyItems) do
@@ -483,7 +411,6 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
         if (data.current == "backup") then
             -- Use Config.SellItems directly to avoid nil issues
             local sellItems = Config.SellItems[storeId] or {}
-            print("Returning to main menu from buy menu")
             CloseStoreMenu() -- First close this menu
             Wait(100) -- Small delay to ensure proper menu closing
             OpenStoreMainMenu(storeId, buyItems, sellItems, storeCfg) -- Then reopen the main menu
@@ -495,9 +422,6 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
             local itemName = data.current.info.itemName
             local quantity = data.current.value
             local buyPrice = data.current.info.buyprice * quantity
-            
-            -- Debug info
-            print("Selected to buy " .. quantity .. " of " .. itemName .. " at price " .. buyPrice)
             
             -- Update buyTable with selected items
             if quantity > 0 then
@@ -551,7 +475,6 @@ function OpenDirectBuyMenu(storeId, category, buyItems, storeCfg)
                     hasItems = true
                     -- Add detailed debug info and ensure we have the correct index
                     local actualIndex = itemData.itemIndex
-                    print("Buying item: " .. itemName .. " - Quantity: " .. itemData.quantity .. " - Index: " .. actualIndex)
                     TriggerServerEvent("sb_miningstore:BuyItem", storeId, actualIndex, itemData.quantity)
                     
                     -- Add a small delay between each purchase to avoid race conditions
@@ -576,24 +499,15 @@ function OpenDirectSellMenu(storeId, category, sellItems, storeCfg)
     local tempCategories = {}
     local count = 0
     
-    -- Debug information
-    print("Opening Direct Sell Menu for category: " .. category)
-    print("Number of sellable items in config: " .. #sellItems)
-    
     -- Use the callback to get player inventory
     VORPcore.Callback.TriggerAsync("sb_miningzone:getInventoryItems", function(playerItems)
         if playerItems then
-            print("Retrieved player inventory with " .. #playerItems .. " items")
-            
             -- Get all items in this category
             for idx, item in ipairs(sellItems) do
                 if item.category == category then
                     -- Simple check if player has this item
                     local playerItem = playerItems[item.itemName]
                     if playerItem and playerItem.count > 0 then
-                        -- Print debug info for each valid item
-                        print("Player has " .. playerItem.count .. " of " .. item.itemName)
-                        
                         -- Calculate sell price based on configuration
                         local itemPrice = item.sellprice
                         if storeCfg.RandomPrices then
@@ -696,9 +610,6 @@ function OpenDirectSellMenu(storeId, category, sellItems, storeCfg)
                     local quantity = data.current.value
                     local sellPrice = data.current.info.sellprice * quantity
                     
-                    -- Debug info
-                    print("Selected to sell " .. quantity .. " of " .. itemName .. " at price " .. sellPrice)
-                    
                     -- Update sellTable with selected items
                     if quantity > 0 then
                         sellTable[itemName] = {
@@ -774,21 +685,14 @@ function OpenDirectSellMenu(storeId, category, sellItems, storeCfg)
                             
                             -- Check if we found a valid index
                             if actualIndex > 0 then
-                                print("Selling item: " .. itemName .. " - Quantity: " .. itemData.quantity .. " - Index: " .. actualIndex)
-                                
-                                -- Use a PCalled server trigger to prevent any errors from crashing the script
-                                local success = true
                                 TriggerServerEvent("sb_miningstore:SellItem", storeId, actualIndex, itemData.quantity)
                                 
                                 -- Increment our counter for sold items
-                                if success then
-                                    itemsSold = itemsSold + 1
-                                end
+                                itemsSold = itemsSold + 1
                                 
                                 -- Add a wait between each item sold
                                 Wait(200)
                             else
-                                print("Error: Could not find item index for " .. itemName)
                                 VORPcore.NotifyRightTip("Error finding item " .. itemName, 3000)
                             end
                         end
@@ -799,7 +703,6 @@ function OpenDirectSellMenu(storeId, category, sellItems, storeCfg)
                 CloseStoreMenu()
             end)
         else
-            print("Failed to retrieve player inventory")
             VORPcore.NotifyRightTip("Error retrieving inventory", 3000)
             CloseStoreMenu()
         end
@@ -845,34 +748,7 @@ RegisterNetEvent("sb_miningstore:CloseMenu")
 AddEventHandler("sb_miningstore:CloseMenu", function()
     isInMenu = false
     Config.UI(false)
-    MenuData.CloseAll()
 end)
-
--- Helper function to find item index by name
-function FindItemIndexByName(items, itemName)
-    -- Print debugging info
-    if not items then
-        print("Error: items is nil in FindItemIndexByName")
-        return 1
-    end
-    
-    if not itemName then
-        print("Error: itemName is nil in FindItemIndexByName")
-        return 1
-    end
-    
-    -- Loop through all items and print debug info for each
-    print("Looking for item: " .. itemName)
-    for i, item in ipairs(items) do
-        if item.itemName == itemName then
-            print("Found item at index: " .. i)
-            return i
-        end
-    end
-    
-    print("Item not found, returning default index 1")
-    return 1 -- Default to first item if not found
-end
 
 -- When mining finishes reset state
 AddEventHandler("vorp_mining:finishedMining", function()

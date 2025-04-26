@@ -13,9 +13,9 @@ Config.BuyItems = {
             currencyType = "cash",
             buyprice = 45,
             randomprice = math.random(40, 50),
-            desc = "A sturdy pickaxe for mining ore deposits.",
+            desc = "A sturdy pickaxe for mining ore deposits.\nLimit: 1 per in-game day.",
             category = "tools",
-            itemLimit = 5, -- Limit the number that can be purchased
+            itemLimit = 1, -- Limit the number that can be purchased at once
         },
         
         -- Add additional mining tools here as needed

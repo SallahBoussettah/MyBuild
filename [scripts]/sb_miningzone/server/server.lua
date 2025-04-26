@@ -20,12 +20,9 @@ function VORPinv.getItemCount(source, itemName)
             for _, item in pairs(userInventory) do
                 if item.name == itemName then
                     count = item.count
-                    print("^2Found item " .. itemName .. " with count: " .. count)
                     break
                 end
             end
-        else
-            print("^1Unable to get user inventory for source " .. source)
         end
     end
     return count
@@ -37,14 +34,12 @@ end
 
 function VORPinv.subItem(source, itemName, amount)
     if not source or not itemName or not amount then
-        print("^1Missing parameters for subItem^7")
         return false
     end
     
     -- First check if player has the item in sufficient quantity
     local currentCount = VORPinv.getItemCount(source, itemName)
     if currentCount < amount then
-        print("^1Player doesn't have enough of item " .. itemName .. " - Has: " .. currentCount .. ", Needs: " .. amount)
         return false
     end
     
@@ -60,10 +55,8 @@ function VORPinv.subItem(source, itemName, amount)
     -- Check result
     local newCount = VORPinv.getItemCount(source, itemName)
     if newCount == (currentCount - amount) then
-        print("^2Successfully removed " .. amount .. " of item " .. itemName)
         return true
     else
-        print("^1Failed to remove items or verify removal - Before: " .. currentCount .. ", After: " .. newCount)
         return false
     end
 end
@@ -123,24 +116,17 @@ function VORPinv.canCarryItem(source, itemName, amount)
     return can
 end
 
--- Log initialization
-print("^2SB Mining Zones^7: Initialized ^3" .. #Config.MiningZones .. "^7 mining zones.")
-print("^2SB Mining Stores^7: Initialized store system")
-
--- Debug function to check item existence
+-- Check item existence
 local function CheckItemsExist()
-    print("^3Checking mining items availability in configuration^7")
-    
-    -- For each item in the configuration, log that we're checking it
     for storeId, sellItems in pairs(Config.SellItems) do
         for _, item in ipairs(sellItems) do
-            print("Item in sell config: " .. item.itemName)
+            -- Items exist in config
         end
     end
     
     for storeId, buyItems in pairs(Config.BuyItems) do
         for _, item in ipairs(buyItems) do
-            print("Item in buy config: " .. item.itemName)
+            -- Items exist in config
         end
     end
 end
@@ -156,11 +142,6 @@ end)
 CreateThread(function()
     Wait(5000) -- Wait for database to be ready
     
-    print("^3Ensuring mining items exist in database^7")
-    
-    -- Try different approaches to adding items to the database
-    
-    -- Method 1: Using direct SQL
     local function addItemsDirectSQL()
         -- Define all our mining items
         local miningItems = {
@@ -192,24 +173,17 @@ CreateThread(function()
             -- Try various MySQL implementations
             if exports.oxmysql then
                 exports.oxmysql:execute(query, {}, function(result)
-                    if result and result.affectedRows > 0 then
-                        print("^2Added missing item to database: ^7" .. item.item)
-                    end
+                    -- Result handling without debug print
                 end)
             elseif exports.ghmattimysql then
                 exports.ghmattimysql:execute(query, {}, function(result)
-                    if result and result.affectedRows > 0 then
-                        print("^2Added missing item to database: ^7" .. item.item)
-                    end
+                    -- Result handling without debug print
                 end)
             elseif MySQL and MySQL.Async then
                 MySQL.Async.execute(query, {}, function(rowsChanged)
-                    if rowsChanged > 0 then
-                        print("^2Added missing item to database: ^7" .. item.item)
-                    end
+                    -- Result handling without debug print
                 end)
             else
-                print("^1Could not add items - no MySQL implementation found^7")
                 break
             end
             
@@ -224,20 +198,16 @@ end)
 
 -- Force add item function - bypasses most inventory checks
 -- This is used as a last resort when other methods fail
-local function ForceAddItem(_source, itemName, amount)
-    print("Attempting to force add item: " .. itemName .. " x" .. amount)
-    
+local function ForceAddItem(_source, itemName, amount)    
     -- Get the player's inventory directly
     local inventory = VORPinv.getUserInventoryItems(_source)
     if not inventory then
-        print("Failed to get player inventory")
         return false
     end
     
     -- Try to directly manipulate the inventory
     -- This is a more direct approach that bypasses most checks
     local success = VORPinv.addItem(_source, itemName, amount, {})
-    print("Force add result: " .. tostring(success))
     
     return success
 end
@@ -308,7 +278,70 @@ CreateThread(function()
         
         cb(playerItems)
     end)
+
+    -- Create table to track pickaxe purchases if it doesn't exist
+    local query = [[
+        CREATE TABLE IF NOT EXISTS pickaxe_purchases (
+            identifier VARCHAR(50) NOT NULL,
+            charidentifier INT(11) NOT NULL,
+            purchase_date DATE NOT NULL,
+            PRIMARY KEY (identifier, charidentifier, purchase_date)
+        )
+    ]]
+
+    -- Execute the query to create the table
+    if exports.oxmysql then
+        exports.oxmysql:execute(query)
+    elseif exports.ghmattimysql then
+        exports.ghmattimysql:execute(query)
+    elseif MySQL and MySQL.Async then
+        MySQL.Async.execute(query)
+    end
 end)
+
+-- Function to check if a player has already purchased a pickaxe today
+local function HasPurchasedPickaxeToday(identifier, charidentifier)
+    local hasPickaxe = false
+    local today = os.date("%Y-%m-%d")
+    
+    local query = "SELECT COUNT(*) as count FROM pickaxe_purchases WHERE identifier = ? AND charidentifier = ? AND purchase_date = ?"
+    local params = {identifier, charidentifier, today}
+    
+    if exports.oxmysql then
+        local result = exports.oxmysql:executeSync(query, params)
+        if result and result[1] and result[1].count > 0 then
+            hasPickaxe = true
+        end
+    elseif exports.ghmattimysql then
+        local result = exports.ghmattimysql:executeSync(query, params)
+        if result and result[1] and result[1].count > 0 then
+            hasPickaxe = true
+        end
+    elseif MySQL and MySQL.Sync then
+        local result = MySQL.Sync.fetchAll(query, params)
+        if result and result[1] and result[1].count > 0 then
+            hasPickaxe = true
+        end
+    end
+    
+    return hasPickaxe
+end
+
+-- Function to record a pickaxe purchase
+local function RecordPickaxePurchase(identifier, charidentifier)
+    local today = os.date("%Y-%m-%d")
+    
+    local query = "INSERT INTO pickaxe_purchases (identifier, charidentifier, purchase_date) VALUES (?, ?, ?)"
+    local params = {identifier, charidentifier, today}
+    
+    if exports.oxmysql then
+        exports.oxmysql:execute(query, params)
+    elseif exports.ghmattimysql then
+        exports.ghmattimysql:execute(query, params)
+    elseif MySQL and MySQL.Async then
+        MySQL.Async.execute(query, params)
+    end
+end
 
 -- Function to check store limits
 local function checkStoreLimits(storeId, ItemName, quantity, action)
@@ -346,21 +379,27 @@ local function BuyItem(_source, Character, value, ItemName, storeId)
     local money = Character.money
     local total = value.buyprice
     local total2 = (math.floor(total * 100) / 100)
+    local identifier = Character.identifier
+    local charidentifier = Character.charIdentifier
 
-    -- Debug logging
-    print("Processing purchase - Item: " .. ItemName .. ", Quantity: " .. value.quantity .. ", Total: $" .. total2)
+    -- Check for pickaxe restriction - only 1 per in-game day
+    if ItemName == "pickaxe" then
+        -- Check if player has already purchased a pickaxe today
+        if HasPurchasedPickaxeToday(identifier, charidentifier) then
+            TriggerClientEvent("sb_miningstore:BuyItemResponse", _source, false, TranslationStores.Langs.English.pickaxeLimitReached)
+            return false
+        end
+    end
 
     if value.currencyType == "cash" then
         -- Check money first
         if money < total then
-            print("Purchase failed - Insufficient funds")
             TriggerClientEvent("sb_miningstore:BuyItemResponse", _source, false, "You don't have enough money")
             return false
         end
 
         -- Handle weapon purchases separately
         if value.weapon then
-            print("Creating weapon: " .. ItemName)
             for i = 1, value.quantity, 1 do
                 VORPinv.createWeapon(_source, ItemName)
             end
@@ -374,7 +413,6 @@ local function BuyItem(_source, Character, value, ItemName, storeId)
             -- Check store limits first (if applicable)
             if Config.MiningStores[storeId].DynamicStore then
                 if not checkStoreLimits(storeId, ItemName, value.quantity, "buy") then
-                    print("Purchase failed - Store limit reached")
                     TriggerClientEvent("sb_miningstore:BuyItemResponse", _source, false, "Store has reached its limit for this item")
                     return false
                 end
@@ -384,7 +422,6 @@ local function BuyItem(_source, Character, value, ItemName, storeId)
             -- Check if player can carry items
             local canCarry = VORPinv.canCarryItems(_source, value.quantity)
             if not canCarry then
-                print("Player cannot carry items - weight check failed")
                 TriggerClientEvent("sb_miningstore:BuyItemResponse", _source, false, "You cannot carry any more items")
                 return false
             end
@@ -392,7 +429,6 @@ local function BuyItem(_source, Character, value, ItemName, storeId)
             -- Check if player can carry this specific item
             local canCarryItem = VORPinv.canCarryItem(_source, ItemName, value.quantity)
             if not canCarryItem then
-                print("Player cannot carry this specific item")
                 TriggerClientEvent("sb_miningstore:BuyItemResponse", _source, false, "You cannot carry any more of this item")
                 return false
             end
@@ -405,17 +441,20 @@ local function BuyItem(_source, Character, value, ItemName, storeId)
                 Character.removeCurrency(0, total)
                 local successMessage = "Bought " .. value.quantity .. " " .. value.itemLabel .. " for $" .. total2
                 TriggerClientEvent("sb_miningstore:BuyItemResponse", _source, true, successMessage)
-                print("Purchase successful - Player " .. fname .. " " .. lname .. " purchased " .. value.quantity .. " " .. ItemName)
+                
+                -- Record pickaxe purchase if applicable
+                if ItemName == "pickaxe" then
+                    RecordPickaxePurchase(identifier, charidentifier)
+                end
+                
                 return true
             else
-                print("Failed to add item to inventory")
                 TriggerClientEvent("sb_miningstore:BuyItemResponse", _source, false, "Failed to add item to your inventory")
                 return false
             end
         end
     end
     
-    print("Purchase failed - Invalid currency type")
     TriggerClientEvent("sb_miningstore:BuyItemResponse", _source, false, "Invalid currency type")
     return false
 end
@@ -427,11 +466,7 @@ AddEventHandler("sb_miningstore:BuyItem", function(storeId, itemIndex, amount)
     local Character = VORPcore.getUser(_source).getUsedCharacter
     local buyItemsList = Config.BuyItems[storeId]
     
-    -- Debug logging
-    print("Buy attempt - Store: " .. storeId .. ", Item index: " .. tostring(itemIndex) .. ", Amount: " .. amount)
-    
     if not buyItemsList then
-        print("Error: buyItemsList is nil for storeId: " .. storeId)
         TriggerClientEvent("sb_miningstore:BuyItemResponse", _source, false, "Store inventory not found")
         return
     end
@@ -439,7 +474,6 @@ AddEventHandler("sb_miningstore:BuyItem", function(storeId, itemIndex, amount)
     -- Safety check - ensure the index is numeric and convert if needed
     local validIndex = tonumber(itemIndex)
     if not validIndex then
-        print("Error: Invalid index type: " .. type(itemIndex))
         TriggerClientEvent("sb_miningstore:BuyItemResponse", _source, false, "Invalid item selection")
         return
     end
@@ -447,27 +481,20 @@ AddEventHandler("sb_miningstore:BuyItem", function(storeId, itemIndex, amount)
     -- Directly access the array element by using the index
     local itemData = nil
     
-    -- Print all available items for debugging
-    print("Available items in store (" .. #buyItemsList .. " items):")
     for i=1, #buyItemsList do
         local item = buyItemsList[i]
-        print(i .. ": " .. item.itemName)
         
         -- Match the index we're looking for
         if i == validIndex then
             itemData = item
-            print("Found matching item at index " .. i)
         end
     end
     
     -- If itemData is still nil, we didn't find the item
     if not itemData then
-        print("Error: No item found at index " .. validIndex .. " in store " .. storeId)
         TriggerClientEvent("sb_miningstore:BuyItemResponse", _source, false, "Item not found in store")
         return
     end
-    
-    print("Processing purchase for item: " .. itemData.itemName .. " with price: " .. itemData.buyprice)
     
     local value = {
         buyprice = itemData.buyprice * amount,  -- Total price for quantity
@@ -489,19 +516,12 @@ local function SellItem(_source, Character, value, ItemName, storeId)
 
     local total = value.sellprice * value.quantity
     local total2 = (math.floor(total * 100) / 100)
-    
-    -- Debug the selling attempt with all details
-    print("^2===== SELL ITEM TRANSACTION =====^7")
-    print("^3Player: ^7" .. fname .. " " .. lname)
-    print("^3Item: ^7" .. ItemName .. " (^3" .. value.quantity .. "^7)")
-    print("^3Price: ^7$" .. value.sellprice .. " x " .. value.quantity .. " = $" .. total2)
 
     if value.weapon then
         local countWeap = 0
         local userWeapons = VORPinv.getUserInventoryWeapons(_source)
         
         if not userWeapons then
-            print("^1Error: Failed to get player weapons inventory^7")
             TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "Transaction failed - weapon inventory error")
             return false
         end
@@ -518,7 +538,6 @@ local function SellItem(_source, Character, value, ItemName, storeId)
         end
 
         if countWeap == 0 then
-            print("^1Player has no weapons of type: ^7" .. ItemName)
             TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "You don't have this weapon")
             return false
         end
@@ -536,52 +555,43 @@ local function SellItem(_source, Character, value, ItemName, storeId)
                 if item.name == ItemName then
                     itemFound = true
                     itemCount = item.count
-                    print("^2Found item ^7" .. ItemName .. "^2 in inventory with count: ^7" .. itemCount)
                     break
                 end
             end
         else
-            print("^1Error: Failed to get player inventory^7")
             TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "Transaction failed - inventory error")
             return false
         end
         
         if not itemFound then
-            print("^1Item not found in player inventory: ^7" .. ItemName)
             TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "Transaction failed - item not found")
             return false
         end
         
         -- Check if player has enough items
         if itemCount < value.quantity then
-            print("^1Player doesn't have enough items - Has: ^7" .. itemCount .. "^1, Wants to sell: ^7" .. value.quantity)
             TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "You don't have enough of this item")
             return false
         end
         
         -- Try to remove the items from inventory
-        print("^3Removing ^7" .. value.quantity .. " ^3of ^7" .. ItemName .. " ^3from inventory^7")
         local success = VORPinv.subItem(_source, ItemName, value.quantity)
         
         if success then
             canContinue = true
-            print("^2Successfully removed items from inventory^7")
         else
-            print("^1Failed to remove items from inventory^7")
             TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "Transaction failed - inventory error")
             return false
         end
     end
 
     if not canContinue then
-        print("^1Transaction failed - canContinue is false^7")
         TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "Transaction failed - no items to sell")
         return false
     end
 
     if Config.MiningStores[storeId].DynamicStore then
         if not checkStoreLimits(storeId, ItemName, value.quantity, "sell") then
-            print("^1Transaction failed - store limit reached^7")
             TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "Store can't buy any more of this item")
             return false
         end
@@ -589,14 +599,11 @@ local function SellItem(_source, Character, value, ItemName, storeId)
 
     -- Add money to player
     if value.currencyType == "cash" then
-        print("^2Adding $^7" .. total2 .. " ^2to player^7")
         Character.addCurrency(0, total)
         local successMessage = "Sold " .. value.quantity .. " " .. value.itemLabel .. " for $" .. total2
         TriggerClientEvent("sb_miningstore:SellItemResponse", _source, true, successMessage)
-        print("^2Transaction complete - Added $" .. total2 .. " to player for selling " .. value.quantity .. " " .. ItemName .. "^7")
     end
     
-    print("^2===== TRANSACTION COMPLETE =====^7")
     return true
 end
 
@@ -630,108 +637,18 @@ AddEventHandler("sb_miningstore:OpenStore", function(storeId)
 
     -- Validate data before proceeding
     if not storeData then
-        print("^1Error: Store data not found for storeId: " .. storeId .. "^7")
         VORPcore.NotifyRightTip(_source, "Store data not found", 3000)
         return
     end
 
     if not buyItems then
-        print("^1Warning: buyItems is nil for storeId: " .. storeId .. ", initializing empty table^7")
         buyItems = {}
     end
 
     if not sellItems then
-        print("^1Warning: sellItems is nil for storeId: " .. storeId .. ", initializing empty table^7")
         sellItems = {}
     end
-
-    -- Debug: Print sellable items configuration
-    print("^3===== DEBUG: SELLABLE ITEMS IN CONFIG =====^7")
-    for idx, item in pairs(sellItems) do
-        print("^3Item " .. idx .. ": ^7" .. item.itemName .. " (^2" .. item.itemLabel .. "^7)")
-    end
     
-    -- Debug: Print buyable items configuration
-    print("^3===== DEBUG: BUYABLE ITEMS IN CONFIG =====^7")
-    for idx, item in pairs(buyItems) do
-        print("^3Item " .. idx .. ": ^7" .. item.itemName .. " (^2" .. item.itemLabel .. "^7)")
-    end
-    
-    -- Check if player has the required items for selling in their inventory
-    local playerItems = {}
-    
-    -- Get player's entire inventory first
-    local playerInventory = VORPinv.getUserInventoryItems(_source)
-    
-    if playerInventory then
-        print("^2Successfully retrieved player inventory with ^3" .. #playerInventory .. "^2 items^7")
-        
-        -- Debug: Print all player inventory items
-        print("^3===== DEBUG: PLAYER INVENTORY ITEMS =====^7")
-        for _, item in pairs(playerInventory) do
-            print("^3Inventory item: ^7" .. item.name .. " (^2" .. item.label .. "^7) - Count: ^2" .. item.count)
-        end
-        
-        -- Create list of items we're specifically looking for
-        local interestingItems = {
-            "goldnugget", "clay", "provision_coal", "copper", "iron", "sulfur", "stone", 
-            "coal", "nitrite", "rock", "salt" -- Added new items from config.lua
-        }
-        
-        -- Debug: Specifically check for mining items we care about
-        print("^3===== DEBUG: CHECKING FOR SPECIFIC MINING ITEMS =====^7")
-        for _, itemName in pairs(interestingItems) do
-            local found = false
-            for _, invItem in pairs(playerInventory) do
-                if invItem.name == itemName then
-                    found = true
-                    print("^2FOUND mining item: ^7" .. itemName .. " (^2" .. invItem.label .. "^7) - Count: ^2" .. invItem.count)
-                    break
-                end
-            end
-            
-            if not found then
-                print("^1MISSING mining item: ^7" .. itemName)
-            end
-        end
-        
-        -- Check which sellable items the player has
-        for _, item in pairs(sellItems) do
-            print("^3Checking if player has item: ^7" .. item.itemName)
-            
-            -- Look for the item in the player's inventory
-            for _, invItem in pairs(playerInventory) do
-                if invItem.name == item.itemName and invItem.count > 0 then
-                    playerItems[item.itemName] = {
-                        count = invItem.count,
-                        label = item.itemLabel,
-                        type = "item",
-                        canUse = true,
-                        canRemove = true,
-                        isDegradable = false
-                    }
-                    print("^2Player has ^3" .. invItem.count .. "^2 of item ^3" .. item.itemName .. "^7")
-                    break
-                end
-            end
-        end
-        
-        -- Debug: Print matched items that player can sell
-        print("^3===== DEBUG: MATCHED SELLABLE ITEMS =====^7")
-        local matchCount = 0
-        for itemName, item in pairs(playerItems) do
-            print("^2Player can sell: ^7" .. itemName .. " (^2" .. item.label .. "^7) - Count: ^2" .. item.count)
-            matchCount = matchCount + 1
-        end
-        
-        if matchCount == 0 then
-            print("^1WARNING: No matching items found for player to sell!^7")
-        end
-    else
-        print("^1Failed to retrieve player inventory^7")
-    end
-    
-    -- Send the store data to the client
     TriggerClientEvent("sb_miningstore:OpenStoreMenu", _source, storeId, buyItems, sellItems, storeData)
 end)
 
@@ -742,15 +659,7 @@ AddEventHandler("sb_miningstore:SellItem", function(storeId, itemIndex, amount)
     local Character = VORPcore.getUser(_source).getUsedCharacter
     local sellItemsList = Config.SellItems[storeId]
     
-    -- Debug logging
-    print("^3===== SELL ATTEMPT =====^7")
-    print("^3Store: ^7" .. storeId)
-    print("^3Item index: ^7" .. tostring(itemIndex))
-    print("^3Amount: ^7" .. amount)
-    print("^3Player: ^7" .. Character.firstname .. " " .. Character.lastname)
-    
     if not sellItemsList then
-        print("^1Error: sellItemsList is nil for storeId: ^7" .. storeId)
         TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "Store inventory not found")
         return
     end
@@ -758,14 +667,12 @@ AddEventHandler("sb_miningstore:SellItem", function(storeId, itemIndex, amount)
     -- Safety check - ensure the index is numeric and convert if needed
     local validIndex = tonumber(itemIndex)
     if not validIndex then
-        print("^1Error: Invalid index type: ^7" .. type(itemIndex))
         TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "Invalid item selection")
         return
     end
     
     -- Check if the index is within bounds
     if validIndex < 1 or validIndex > #sellItemsList then
-        print("^1Error: Index out of bounds. Valid range: 1-" .. #sellItemsList .. ", Got: " .. validIndex)
         TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "Invalid item selection")
         return
     end
@@ -774,13 +681,9 @@ AddEventHandler("sb_miningstore:SellItem", function(storeId, itemIndex, amount)
     local itemData = sellItemsList[validIndex]
     
     if not itemData then
-        print("^1Error: No item found at index " .. validIndex .. " in store " .. storeId)
         TriggerClientEvent("sb_miningstore:SellItemResponse", _source, false, "Item not found in store")
         return
     end
-    
-    print("^2Found item: ^7" .. itemData.itemName .. " at index " .. validIndex)
-    print("^3Processing sale for: ^7" .. itemData.itemName .. " x" .. amount .. " at $" .. itemData.sellprice .. " each")
     
     local value = {
         sellprice = itemData.sellprice,

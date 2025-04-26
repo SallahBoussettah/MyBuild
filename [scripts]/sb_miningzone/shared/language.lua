@@ -26,5 +26,9 @@ TranslationStores.Langs = {
         noMoney = "You don't have enough money!",
         noItems = "You don't have any items to sell.",
         limitReached = "The store cannot buy any more of this item.",
+        
+        -- Pickaxe limit messages
+        pickaxeLimitReached = "You can only purchase one pickaxe per in-game day.",
+        pickaxeLimitReminder = "Remember: You can only purchase one pickaxe per in-game day.",
     }
 } 

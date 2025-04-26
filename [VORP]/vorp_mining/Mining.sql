@@ -8,6 +8,9 @@ INSERT IGNORE INTO items (`item`, `label`, `limit`, `can_remove`, `type`, `usabl
                          ('iron', 'Blacksteel Bar', 50, 1, 'item_standard', 0),
                          ('sulfur', 'Brass Bar', 50, 1, 'item_standard', 0),
                          ('stone', 'Lead Bar', 50, 1, 'item_standard', 0),
-                         ('pickaxe', 'Pickaxe', 1, 1, 'item_standard', 0);
+                         ('pickaxe', 'Pickaxe', 1, 1, 'item_standard', 1);
 
-select * from items where item = 'iron';
+insert into items (`item`, `label`, `limit`, `can_remove`, `type`, `usable`) values ('lantern', 'Lantern', 1, 1, 'item_standard', 1); 
+
+select * from items where item = 'lantern';
+
