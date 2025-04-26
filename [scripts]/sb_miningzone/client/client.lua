@@ -93,7 +93,7 @@ CreateThread(function()
     Wait(2000) -- Give time for configs to load
     
     CreateMiningZoneBlips()
-    CreateDebugZoneMarkers()
+    -- CreateDebugZoneMarkers() -- Commented out to disable visual markers
     
     while true do
         local zoneInfo = IsPlayerInMiningZone()

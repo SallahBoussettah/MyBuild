@@ -24,25 +24,9 @@ Config.Blip = {
 -- Format: { x, y, z, radius, name, description, allow_mining }
 Config.MiningZones = {
     {
-        coords = {x = -1424.001, y = 1176.164, z = 226.345}, -- Grizzlies Mining Area (example)
+        coords = {x = -1421.2853, y = 1171.9752, z = 226.3315}, -- Grizzlies Mining Area (example)
         radius = 20.0,
-        name = "Grizzlies Mining Area 1",
-        description = "A prime mining location rich with various ores.",
-        allow_mining = true,
-        blip = true -- Show blip for this zone
-    },
-    {
-        coords = {x = -1432.4906, y = 1175.9758, z = 226.5609}, -- Grizzlies Mining Area (example)
-        radius = 20.0,
-        name = "Grizzlies Mining Area 2",
-        description = "A prime mining location rich with various ores.",
-        allow_mining = true,
-        blip = true -- Show blip for this zone
-    },
-    {
-        coords = {x = -1423.1715, y = 1171.1313, z = 226.3418}, -- Grizzlies Mining Area (example)
-        radius = 20.0,
-        name = "Grizzlies Mining Area 3",
+        name = "Grizzlies Mining Area1",
         description = "A prime mining location rich with various ores.",
         allow_mining = true,
         blip = true -- Show blip for this zone

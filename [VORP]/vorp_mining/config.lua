@@ -9,7 +9,7 @@ Config.StopMiningKey = 0x3B24C470         -- [ F ]  Key to stop Mining
 Config.MineRockKey = 0x07B8BEAF           -- [ MOUSE LEFT CLICK ] Key to Mine Rock
 
 Config.MinSwing = 1                       -- Min Swings on a Rock
-Config.MaxSwing = 3                       -- Max Swings on a Rock
+Config.MaxSwing = 5                       -- Max Swings on a Rock
 
 Config.PickaxeDurabilityThreshold = 20    -- Breakage threshold of the pickaxe
 
