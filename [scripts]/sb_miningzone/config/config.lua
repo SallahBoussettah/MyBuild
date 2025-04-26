@@ -12,12 +12,68 @@ Config.RestrictedMiningMessage = "You can only mine in designated mining areas. 
 -- Show blips on the map for mining zones?
 Config.ShowMiningZoneBlips = true
 
+-- if you have UI you want to hide use it in this function
+-- remove what you dont use
+Config.UI = function(state)
+    if state then
+        --ExecuteCommand("hideneeds hidden")
+        --ExecuteCommand("hideui")
+        TriggerEvent('vorpmetabolism:setHud', false)
+    else
+        --ExecuteCommand("hideneeds visible")
+        --ExecuteCommand("showui")
+        TriggerEvent('vorpmetabolism:setHud', true)
+    end
+end
+
 -- Blip configuration
 Config.Blip = {
     sprite = 1258184551, -- Mining blip sprite
     color = 46,          -- Blip color
     name = "Mining Zone", -- Blip name on map
     scale = 0.8          -- Blip size
+}
+
+-- Mining Store configuration
+Config.MiningStores = {
+    GrizzliesStore = {
+        isDeactivated = false,
+        useRandomLocation = false,
+        possibleLocations = {
+            OpenMenu = {},
+            Npcs = {}
+        },
+        Blip = {
+            Allowed = true,
+            Name = "Grizzlies Mining Store",
+            sprite = 1475879922,
+            Pos = vector3(-1392.6552, 1155.5912, 224.4771),
+        },
+        Npc = {
+            Pos = vector4(-1392.6552, 1155.5912, 224.4771, 137.3867),
+            distanceRemoveNpc = 20.0,
+            Allowed = true,
+            Model = "U_M_M_BHT_MINEFOREMAN",
+        },
+        storeName = "Grizzlies Mining Store",
+        PromptName = "mining store",
+        distanceOpenStore = 3.0,
+        AllowedJobs = {},
+        JobGrade = 0,
+        category = {
+            { label = "Tools", Type = "tools", desc = "Mining equipment", img = "butcher_table_production" },
+            { label = "Ore", Type = "ore", desc = "Mining ores and materials", img = "provision_gold_nugget" },
+        },
+        storeType = {
+            { label = "Buy", Type = "buy", desc = "Buy mining equipment", img = "consumable_bread_roll" },
+            { label = "Sell", Type = "sell", desc = "Sell mining materials", img = "butcher_table_production" },
+        },
+        StoreHoursAllowed = true,
+        RandomPrices = true,
+        StoreOpen = 6, -- 6 AM
+        StoreClose = 22, -- 10 PM
+        DynamicStore = true,
+    }
 }
 
 -- Mining zones definitions
