@@ -128,27 +128,6 @@ end)
 
 -- EVENT HANDLERS
 
--- Handle the VORP Mining check - This is where we integrate with vorp_mining
-AddEventHandler("vorp_mining:beginMining", function()
-    playerMiningState = "mining"
-    
-    if Config.StrictRestriction and not inMiningZone then
-        TriggerEvent("vorp_mining:cancelMining")
-        VORPcore.NotifyRightTip(Config.RestrictedMiningMessage, 4000)
-        Wait(500)
-        playerMiningState = "idle"
-        return false
-    end
-    
-    if Config.ReducedSuccessOutsideZones and not inMiningZone and not Config.StrictRestriction then
-        TriggerEvent("vorp_mining:setSuccessModifier", Config.OutsideZoneSuccessModifier)
-    else
-        TriggerEvent("vorp_mining:setSuccessModifier", 1.0)
-    end
-    
-    return true
-end)
-
 -- When mining finishes reset state
 AddEventHandler("vorp_mining:finishedMining", function()
     playerMiningState = "idle"

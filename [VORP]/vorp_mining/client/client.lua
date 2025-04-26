@@ -22,18 +22,35 @@ local MiningZoneConfig = {
 
 -- Check if sb_miningzone resource is available
 CreateThread(function()
+    -- Wait longer initially to give other resources time to load exports
+    Wait(5000) 
     local resourceState = GetResourceState('sb_miningzone')
+    print("Mining Init Debug: sb_miningzone state: ", resourceState) -- DEBUG
     if resourceState == "started" or resourceState == "starting" then
         sbMiningZonesAvailable = true
         print("VORP Mining: Detected sb_miningzone resource, mining restrictions will be applied.")
         
         -- Try to get configuration from sb_miningzone
-        Wait(1000) -- Wait for resources to be fully loaded
-        MiningZoneConfig.StrictRestriction = exports.sb_miningzone:GetConfigValue("StrictRestriction") or MiningZoneConfig.StrictRestriction
-        MiningZoneConfig.RestrictedMiningMessage = exports.sb_miningzone:GetConfigValue("RestrictedMiningMessage") or MiningZoneConfig.RestrictedMiningMessage
-        MiningZoneConfig.ReducedSuccessOutsideZones = exports.sb_miningzone:GetConfigValue("ReducedSuccessOutsideZones") or MiningZoneConfig.ReducedSuccessOutsideZones
-        MiningZoneConfig.OutsideZoneSuccessModifier = exports.sb_miningzone:GetConfigValue("OutsideZoneSuccessModifier") or MiningZoneConfig.OutsideZoneSuccessModifier
+        Wait(2000) -- Extra wait before reading exports
+        local exportedStrict = exports.sb_miningzone:GetConfigValue("StrictRestriction")
+        print("Mining Init Debug: Exported StrictRestriction value: ", exportedStrict) -- DEBUG
+        MiningZoneConfig.StrictRestriction = exportedStrict or MiningZoneConfig.StrictRestriction
+        
+        local exportedMessage = exports.sb_miningzone:GetConfigValue("RestrictedMiningMessage")
+        MiningZoneConfig.RestrictedMiningMessage = exportedMessage or MiningZoneConfig.RestrictedMiningMessage
+        
+        local exportedReduced = exports.sb_miningzone:GetConfigValue("ReducedSuccessOutsideZones")
+        MiningZoneConfig.ReducedSuccessOutsideZones = exportedReduced or MiningZoneConfig.ReducedSuccessOutsideZones
+        
+        local exportedModifier = exports.sb_miningzone:GetConfigValue("OutsideZoneSuccessModifier")
+        MiningZoneConfig.OutsideZoneSuccessModifier = exportedModifier or MiningZoneConfig.OutsideZoneSuccessModifier
+        
+        print("Mining Init Debug: Final MiningZoneConfig.StrictRestriction: ", MiningZoneConfig.StrictRestriction) -- DEBUG
+    else
+        sbMiningZonesAvailable = false -- Explicitly set false if resource not found
+        print("Mining Init Debug: sb_miningzone NOT detected or not started.") -- DEBUG
     end
+    print("Mining Init Debug: sbMiningZonesAvailable flag set to: ", sbMiningZonesAvailable) -- DEBUG
 end)
 
 -- Function to check if player can mine here (integrates with sb_miningzone)
@@ -232,18 +249,11 @@ end
 
 local function checkStartMineBtnPressed(rock)
     if PromptHasHoldModeCompleted(MinePrompt) then
-        -- Check if player can mine here first
-        local canMine = CanMineHere()
-        if canMine then
-            active = true
-            local player = PlayerPedId()
-            SetCurrentPedWeapon(player, GetHashKey("WEAPON_UNARMED"), true, 0, false, false)
-            Wait(500)
-            TriggerServerEvent("vorp_mining:pickaxecheck", rock.vector_coords)
-        else
-            -- Mining not allowed, we already showed a notification in CanMineHere
-            Wait(1000) -- Add delay to prevent spam
-        end
+        active = true
+        local player = PlayerPedId()
+        SetCurrentPedWeapon(player, GetHashKey("WEAPON_UNARMED"), true, 0, false, false)
+        Wait(500)
+        TriggerServerEvent("vorp_mining:pickaxecheck", rock.vector_coords)
     end
 end
 
@@ -278,12 +288,11 @@ local function convertConfigTownRestrictionsToHashRegister()
 end
 
 local function manageStartMinePrompt(restricted_towns, player_coords)
-    local is_promp_enabled = true
-
-    if isInRestrictedTown(restricted_towns, player_coords) then
-        is_promp_enabled = false
-    end
-    PromptSetEnabled(MinePrompt, is_promp_enabled)
+    -- Always enable and make visible the prompt if this function is called,
+    -- because the main loop already verified we are in a valid sb_miningzone
+    -- and found a rock.
+    PromptSetEnabled(MinePrompt, true)
+    PromptSetVisible(MinePrompt, true) -- Ensure prompt is visible
 end
 
 CreateThread(function()
@@ -296,14 +305,65 @@ CreateThread(function()
         if active == false then
             local player = PlayerPedId()
             local player_coords = GetEntityCoords(player)
+            local can_search_for_rocks = true -- Default: allow searching
+            local is_in_zone = false -- Default: assume outside zone unless checked
 
-            nearby_rocks = getUnMinedNearbyRock(allowed_rock_model_hashes, player, player_coords)
+            -- Check if zone restriction applies from sb_miningzone
+            if sbMiningZonesAvailable and MiningZoneConfig.StrictRestriction then
+                -- If strict mode is ON, default to FALSE, only set true if IN the zone
+                can_search_for_rocks = false 
+                is_in_zone = exports.sb_miningzone:IsPlayerInMiningZone().inZone
+                
+                if is_in_zone then
+                    can_search_for_rocks = true -- Allow searching only when confirmed inside
+                end
+                -- DEBUG PRINT
+                print("Mining Debug: In Zone? ", is_in_zone)
+            else
+                -- If zone script isn't running or strict mode is OFF, allow searching everywhere (original VORP behavior)
+                can_search_for_rocks = true
+            end
 
-            if nearby_rocks and not isRockAlreadyMined(nearby_rocks.vector_coords) then
-                manageStartMinePrompt(restricted_towns, player_coords)
+            -- DEBUG PRINT
+            print("Mining Debug: Can Search For Rocks? ", can_search_for_rocks)
+
+            -- Proceed based on the zone check
+            if can_search_for_rocks then
+                -- Player is allowed to be here (either in a zone, or sb_miningzone is not active/strict)
+                -- Find nearby unmined rocks
+                local found_rock = getUnMinedNearbyRock(allowed_rock_model_hashes, player, player_coords)
+                
+                -- DEBUG PRINT
+                if found_rock then print("Mining Debug: Found Rock Model Hash: ", found_rock.model_hash) else print("Mining Debug: No Rock Found Nearby") end
+
+                if found_rock and not isRockAlreadyMined(found_rock.vector_coords) then
+                    -- A valid rock is nearby
+                    nearby_rocks = found_rock -- Set the target rock for the other thread
+                    -- Manage the prompt based on town restrictions (original logic)
+                    -- This will enable the prompt if not town-restricted
+                    manageStartMinePrompt(restricted_towns, player_coords)
+                else
+                    -- No valid rock found nearby, or it was already mined
+                    nearby_rocks = nil -- Clear target
+                    -- Don't explicitly hide the prompt here, let the absence of nearby_rocks handle it in the second thread
+                end
+            else
+                -- Player is outside a required sb_miningzone mining zone
+                nearby_rocks = nil -- Ensure no rock target
+                -- Explicitly hide the mining prompt
+                if MinePrompt then
+                     PromptSetEnabled(MinePrompt, false)
+                     PromptSetVisible(MinePrompt, false)
+                end
+            end
+        else
+            -- Player is currently active (mining), ensure prompt is hidden just in case
+            if MinePrompt then
+                 PromptSetEnabled(MinePrompt, false)
+                 PromptSetVisible(MinePrompt, false)
             end
         end
-        Wait(500)
+        Wait(500) -- Wait before next check
     end
 end)
 
@@ -379,13 +439,6 @@ end
 
 
 function GoMine(rock)
-    -- Extra check to make sure we're in a mining zone if required
-    if sbMiningZonesAvailable and MiningZoneConfig.StrictRestriction and not exports.sb_miningzone:IsPlayerInMiningZone().inZone then
-        Core.NotifyRightTip(MiningZoneConfig.RestrictedMiningMessage, 4000)
-        active = false
-        return
-    end
-
     EquipTool('p_pickaxe01x', 'Swing')
     local swingcount = math.random(Config.MinSwing, Config.MaxSwing)
     
