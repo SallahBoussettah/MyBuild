@@ -1,40 +1,146 @@
-# SL Position
+# SB Position
 
-A simple position display script for RedM by Salah.
+A comprehensive coordinate display system for RedM servers, providing developers and administrators with precise location information in customizable formats.
 
-## Features
+## Table of Contents
+- [Core Features](#core-features)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Technical Details](#technical-details)
+- [License](#license)
+- [Credits](#credits)
 
-- Display current player coordinates on screen
-- Toggle display with F3 key or `/pos` command
-- Multiple coordinate display formats
-- Show/hide heading
-- Copy coordinates to chat with `/copypos` command
-- Fully configurable appearance
+## Core Features
 
-## Commands
+### Coordinate Display System
+- **Real-time Tracking**: Live updating of player coordinates as they move
+- **Custom Positioning**: Configurable screen position for coordinate display
+- **Multiple Formats**: Three different display formats for different needs
+- **Heading Information**: Optional heading display with toggle functionality
+- **Background Enhancement**: Semi-transparent background for better readability
 
-- `/pos` - Toggle coordinate display
-- `/heading` - Toggle heading display
-- `/posformat` - Cycle through coordinate formats (Vector3, Detailed, Compact)
-- `/copypos` - Copy current coordinates in vector3 format to chat
+### Developer Tools
+- **Copy Functionality**: Easily copy coordinates to chat for quick reference
+- **Format Cycling**: Quickly switch between coordinate formats without menu navigation
+- **Precise Control**: Configure decimal precision for detailed or rounded values
+- **Visual Customization**: Fully configurable colors, scale, and font options
+- **Keyboard Shortcuts**: Quick toggle with F3 key for rapid accessibility
 
-## Configuration
+### Command System
+- **Toggle Command**: `/pos` to show/hide the coordinate display
+- **Heading Toggle**: `/heading` to include or exclude heading information
+- **Format Selection**: `/posformat` to cycle through available display formats
+- **Position Copy**: `/copypos` to copy current position in vector3 format to chat
 
-Edit `config.lua` to customize:
-
-- Display position on screen
-- Text size and font
-- Colors
-- Format and precision
-- Toggle keys
+### User Experience
+- **Minimal Interference**: Unobtrusive display that doesn't block gameplay
+- **Performance Optimized**: Low resource usage even with constant updates
+- **Intuitive Controls**: Simple keyboard shortcuts and commands
+- **Visual Feedback**: Notifications when changing display options
 
 ## Installation
 
-1. Place the `sb_position` folder in your server's `resources/[scripts]` directory
-2. Add `ensure sb_position` to your `server.cfg`
-3. Restart your server or start the resource
+1. Download the resource
+2. Place in your `resources/[scripts]` folder
+3. Ensure the folder is named `sb_position`
+4. Add `ensure sb_position` to your server.cfg
+5. Restart your server or start the resource
 
-## Requirements
+## Configuration
 
+The resource includes a detailed configuration file:
+
+### Display Settings (`config.lua`)
+```lua
+Config.Display = {
+    -- Position on screen (0.0-1.0)
+    x = 0.175,  -- Left side of screen
+    y = 0.03,   -- Near the top
+    
+    -- Visual settings
+    scale = 0.4,
+    font = 1,
+    
+    -- Text color (RGBA)
+    color = {
+        r = 255, 
+        g = 255, 
+        b = 255, 
+        a = 255
+    },
+    
+    -- Background color (RGBA)
+    bgColor = {
+        r = 0, 
+        g = 0, 
+        b = 0, 
+        a = 120  -- Semi-transparent
+    }
+}
+```
+
+### Format Settings (`config.lua`)
+```lua
+Config.Display = {
+    -- Whether to include the heading in the display
+    showHeading = true,
+    
+    -- Format to use (1: Vector3, 2: Individual, 3: Compact)
+    -- 1: vector3(x, y, z)
+    -- 2: X: 123.45, Y: 123.45, Z: 123.45
+    -- 3: 123.45, 123.45, 123.45
+    format = 2,
+    
+    -- Number of decimal places to display
+    precision = 4
+}
+```
+
+### Control Settings (`config.lua`)
+```lua
+-- Key to toggle the position display (default: F3)
+Config.ToggleKey = 0x3B99E482  -- F3 key
+
+-- Commands
+Config.Commands = {
+    toggle = "pos",     -- Toggle position display
+    heading = "heading", -- Toggle heading display
+    format = "posformat" -- Cycle through different formats
+}
+```
+
+## Technical Details
+
+### Requirements
 - RedM server
-- VORP Core (for notifications) 
+- VORP Core (for notifications)
+
+### Available Format Styles
+- **Vector3**: `vector3(123.4567, 123.4567, 123.4567)`
+- **Detailed**: `X: 123.4567, Y: 123.4567, Z: 123.4567`
+- **Compact**: `123.4567, 123.4567, 123.4567`
+
+### Commands
+
+#### Player Commands
+- `/pos` - Toggle coordinate display on/off
+- `/heading` - Toggle inclusion of heading information
+- `/posformat` - Cycle through the three coordinate formats
+- `/copypos` - Copy current position to chat in vector3 format
+
+### Implementation Notes
+- Implements efficient screen drawing with proper scaling and positioning
+- Uses native RedM functions for coordinate retrieval and display
+- Includes background drawing for improved text readability
+- Adjusts display size based on format and content
+- Implements keybinding for quick access during gameplay
+
+## License
+
+This script is released under a Modified MIT License that restricts usage to personal, non-commercial purposes for the individual purchaser only. Redistribution, reselling, or sharing of this script is prohibited without explicit permission from the copyright holder.
+
+See the [LICENSE](./LICENSE) file for full details.
+
+## Credits
+
+Created by Salah 

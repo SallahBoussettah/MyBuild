@@ -1,200 +1,185 @@
 # SB ColorMap
 
-A RedM resource that applies custom colors to map regions, making different territories easily distinguishable. Perfect for marking family territories, gang areas, or administrative zones.
+A comprehensive map coloring resource for RedM servers, allowing custom coloring of map regions, custom territory creation, and territory notifications to enhance player experience.
 
-## Features
+## Table of Contents
+- [Core Features](#core-features)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Technical Details](#technical-details)
+- [License](#license)
+- [Credits](#credits)
 
-- Custom colors for all major regions in the RedM map
-- Ability to create custom family or gang territories
-- **NEW: Custom map overlays that blend with the map like region coloring**
-- **NEW: Special family blip icons (like revolvers) for territory centers**
-- **NEW: Territory notifications when entering/exiting family territories**
-- Custom-sized circular area blips you can place anywhere on the map
-- Easy configuration through the config.lua file
-- Clean code with proper cleanup when the resource stops
-- No dependencies - works with any framework
-- Includes helpful commands for identifying region hashes and coordinates
+## Core Features
+
+### Region Coloring System
+- **Map Region Management**: Apply custom colors to predefined regions throughout the map
+- **Visual Distinction**: Make different states, districts, and territories easily distinguishable
+- **Consistent Application**: Seamless application and cleanup of regional colors
+- **Automatic Handling**: Colors are properly applied on resource start and removed on resource stop
+
+### Family Territory System
+- **Custom Territories**: Create family or gang territories using region hashes
+- **Visual Representation**: Apply distinct colors to territories for easy recognition
+- **Territory Labeling**: Assign custom labels to each territory for identification
+- **Clean Integration**: Territories blend naturally with the existing map
+
+### Custom Area System
+- **Map Overlay Zones**: Create custom circular area overlays that blend with the map
+- **Standard Area Blips**: Add more visible circular blips with custom colors and transparency
+- **High Detail Rendering**: Option for smoother, more detailed area circles
+- **Flexible Positioning**: Place territories anywhere on the map with custom radiuses
+
+### Family Territory Icons
+- **Custom Blip Icons**: Add special blip icons (like revolvers) for territory centers
+- **Territory Branding**: Customize icons to represent specific families or groups
+- **Visual Waypoints**: Easy navigation to territory centers
+
+### Territory Notifications
+- **Entry/Exit Alerts**: Notifications when entering or leaving territories
+- **Customizable Messages**: Configure the messages displayed for territory transitions
+- **Color Coding**: Family-specific colors for notification messages
+- **Notification Styling**: Options for different notification styles (top or right)
+- **Cooldown System**: Prevents notification spam with configurable cooldown timer
+
+### Utility Commands
+- **Region Identification**: `/getregionhash` command to identify region hashes
+- **Coordinate Tools**: `/getcoords` command for easy recording of map positions
+- **Territory Listing**: `/listterritories` and `/listareas` commands for viewing configured territories
+- **Territory Checking**: `/checkterritory` command to check current territory
 
 ## Installation
 
-1. Copy the `sb_colormap` folder to your server's `resources/[scripts]` directory
-2. Add `ensure sb_colormap` to your server.cfg
-3. Restart your server or start the resource
+1. Download the resource
+2. Place in your `resources/[scripts]` folder
+3. Ensure the folder is named `sb_colormap`
+4. Add `ensure sb_colormap` to your server.cfg
+5. Configure the regions and territories in the config files
+6. Restart your server
 
 ## Configuration
 
-You can customize the colors of each region by editing the `config.lua` file:
+The resource includes a detailed configuration file:
 
+### Region Configuration (`config.lua`)
 ```lua
 Config.ColorMap = {
     STATE_NEW_HANOVER = { 
-		hash = 0x41332496,
-		color = "BLIP_STYLE_DEBUG_GREEN",
+        hash = 0x41332496,
+        color = "BLIP_STYLE_DEBUG_GREEN",
     },
-    -- more regions...
+    -- More regions...
 }
 ```
 
-## Creating Custom Family Territories
-
-### Method 1: Use the Reference Table
-1. Find a suitable region hash in the `Config.RegionHashReference` table in the config file
-2. Add a new entry to the `Config.FamilyTerritories` table with your desired color and label
-
+### Family Territory Configuration (`config.lua`)
 ```lua
 Config.FamilyTerritories = {
-    MY_FAMILY_NAME = {
-        hash = 0x0A355D78, -- TOWN_VALENTINE hash from the reference table
-        color = "BLIP_STYLE_ADVERSARY", -- Purple color
-        label = "My Family Territory"
+    EXAMPLE_FAMILY_VALENTINE = {
+        hash = 0x724E7654, -- DISTRICT_HEARTLAND hash (Valentine area)
+        color = "BLIP_STYLE_ADVERSARY",
+        label = "Valentine Outlaws"
     },
-    -- Add more as needed
+    -- More territories...
 }
 ```
 
-### Method 2: Using Commands
-1. In-game, go to the location you want to color
-2. Use the command `/getregionhash` to get region information
-3. Check your F8 console for instructions
-4. Add the appropriate hash to your `Config.FamilyTerritories` section in the config
-5. Restart the script with `/restart sb_colormap`
-
-## Creating Custom Map Overlays (Recommended)
-
-These custom map overlays appear like the region colors, blending with the map for a seamless look. **This is the recommended way to create custom territories that match the style in your screenshot.** 
-
-1. Go to the location where you want to create your custom area
-2. Use the command `/getcoords` to get your current coordinates
-3. Add a new entry to the `Config.CustomMapOverlays` table:
-
-```lua
-Config.CustomMapOverlays = {
-    {
-        name = "My Family Territory",
-        x = -284.28,        -- X coordinate (from /getcoords)
-        y = 804.92,         -- Y coordinate (from /getcoords)
-        radius = 100.0,     -- Size of the area in meters (adjust as needed)
-        style = "BLIP_STYLE_DEBUG_GREEN", -- Matches the original region coloring style
-        visible = true      -- Whether the area is visible on the map
-    },
-    -- Add more as needed
-}
-```
-
-### Available Styles for Map Overlays
-The following styles match the original region coloring and will blend with the map:
-
-- `BLIP_STYLE_DEBUG_GREEN` - Green tint (like in your screenshot)
-- `BLIP_STYLE_DEBUG_RED` - Red tint
-- `BLIP_STYLE_DEBUG_BLUE` - Blue tint 
-- `BLIP_STYLE_DEBUG_YELLOW` - Yellow tint
-- `BLIP_STYLE_AREA_BOUNDS` - Light blue outline
-- `BLIP_STYLE_AREA_BOUNDS_OVERLAY` - Light shadow overlay (most subtle)
-- `BLIP_STYLE_FM_EVENT` - Light purple
-- `BLIP_STYLE_COP_PERSISTENT` - Blue/grey
-
-## Alternative: Creating Custom Area Blips
-
-For more visible territory markers, you can also use the regular circular blips, though these don't blend as well with the map:
-
+### Custom Area Configuration (`config.lua`)
 ```lua
 Config.CustomAreaBlips = {
     {
-        name = "My Gang Territory",
-        x = -284.28,      -- X coordinate (from /getcoords)
-        y = 804.92,       -- Y coordinate (from /getcoords)
-        radius = 100.0,   -- Size of the area in meters
-        color = 7,        -- Color ID: 7=Red, 10=Green, etc.
-        alpha = 128,      -- Transparency (0-255)
-        highDetail = true, -- Higher quality circle
-        visible = true    -- Whether the area is visible on the map
+        name = "Valentine Gang Territory",
+        x = -284.28,
+        y = 804.92,
+        radius = 100.0,
+        color = 6,
+        alpha = 128,
+        highDetail = true,
+        visible = true
     },
-    -- Add more as needed
+    -- More custom areas...
 }
 ```
 
-## Adding Special Blip Icons for Families
-
-The script now includes support for adding special blip icons (like a revolver) for family territories. This is currently implemented for the Pincertens family, and you can extend it for other families by modifying the client.lua file:
-
+### Map Overlay Configuration (`config.lua`)
 ```lua
--- Look for this code in the client.lua file and adapt it for other families
-if overlay.name == "Your Family Territory Name" then
-    -- Create a custom blip at the center of their territory
-    local customBlip = Citizen.InvokeNative(0x554D9D53F696D002, 1664425300, overlay.x, overlay.y, 0)
-    
-    -- Set blip sprite to a specific icon
-    -- Some useful sprite hashes:
-    -- 669307703: Revolver
-    -- 1322310532: Skull
-    -- 1681904975: Star
-    Citizen.InvokeNative(0x74F74D3207ED525C, customBlip, 669307703, 1) 
-    
-    -- Set blip color
-    Citizen.InvokeNative(0x662D364ABF16DE2F, customBlip, 0xFF0000) -- Red color
-    
-    -- Add name to the blip
-    Citizen.InvokeNative(0x9CB1A1623062F402, customBlip, "Your Family Name")
-    
-    -- Store for cleanup
-    table.insert(customBlips, customBlip)
-end
+Config.CustomMapOverlays = {
+    {
+        name = "Valentine Family Zone",
+        x = -284.28,
+        y = 804.92,
+        radius = 100.0,
+        style = "BLIP_STYLE_AREA_BOUNDS_OVERLAY",
+        visible = true
+    },
+    -- More overlays...
+}
 ```
 
-## Territory Notifications
-
-The script now includes a notification system for family territories, similar to vorp_zonenotify. When players enter or exit a territory, they will receive a notification showing which family's territory they're entering/leaving.
-
-### Configuration
-
-You can customize the territory notification system in the config.lua file:
-
+### Territory Notification Configuration (`config.lua`)
 ```lua
 Config.TerritoryNotify = {
-    Enabled = true,                   -- Enable/disable territory notifications
-    NotificationDuration = 4000,      -- How long notifications show for (in ms)
-    ShowOnlyOnce = true,              -- Only notify when entering a new territory
-    CooldownTimer = 30000,            -- Time before showing the same territory notification again (in ms)
-    EnterMessage = "Entering",        -- Message shown when entering a territory
-    ExitMessage = "Leaving",          -- Message shown when exiting a territory
-    ShowExitNotification = true,      -- Show notification when leaving a territory
-    NotificationStyle = "top",        -- Options: "top" (vorp:NotifyTop) or "right" (vorp:Tip)
+    Enabled = true,
+    NotificationDuration = 4000,
+    ShowOnlyOnce = true,
+    CooldownTimer = 30000,
+    EnterMessage = "Entering",
+    ExitMessage = "Leaving",
+    ShowExitNotification = true,
+    NotificationStyle = "top",
     
-    -- Notification colors for different territory types
     Colors = {
-        Default = "~COLOR_WHITE~",    -- Default color for territories
-        Pincertens = "~COLOR_RED~",   -- Specific color for Pincertens family
-        -- Add more family-specific colors here
+        Default = "~COLOR_WHITE~",
+        Pincertens = "~COLOR_RED~",
     }
 }
 ```
 
-### Adding New Family Colors
+## Technical Details
 
-To add color for a specific family's notifications:
+### Requirements
+- RedM server
+- No specific framework dependencies (works with any framework)
 
-1. Add an entry to the `Colors` table in the `Config.TerritoryNotify` section
-2. The key should match part of the family's territory name
-3. The value should be a RedM color code (like `~COLOR_RED~`)
+### Available Color Styles
+- Standard Colors: `BLIP_STYLE_DEBUG_RED`, `BLIP_STYLE_DEBUG_GREEN`, `BLIP_STYLE_DEBUG_BLUE`, `BLIP_STYLE_DEBUG_YELLOW`
+- Special Styles: `BLIP_STYLE_ADVERSARY`, `BLIP_STYLE_AREA_BOUNDS`, `BLIP_STYLE_AREA_BOUNDS_OVERLAY`, `BLIP_STYLE_COP_PERSISTENT`, `BLIP_STYLE_FM_EVENT`, etc.
 
 ### Commands
 
-- `/checkterritory` - Manually check if you're in a family territory
-
-## Useful Commands
-
+#### Player Commands
 - `/getregionhash` - Get information about the region you're currently in
-- `/getcoords` - Get your current coordinates for creating custom area blips
+- `/getcoords` - Get your current coordinates for creating custom areas
 - `/listterritories` - List all configured family territories in the console
 - `/listareas` - List all custom areas in the console
 - `/checkterritory` - Check if you're currently in a family territory
 
-## Known Limitations
+### Client Functions
 
-- RedM only allows coloring predefined regions - you cannot create entirely custom-shaped colored areas
-- Region hashes cannot be directly determined in-game, so you need to use the reference table
-- Custom areas are circular only - complex shapes are not supported
+```lua
+-- Main functionality in client/main.lua:
+-- Sets up region coloring, custom territories, and map overlays
+-- Provides cleanup when resource stops
+
+-- Territory notification system in client/territory_notify.lua:
+-- IsPlayerInTerritory() - Checks if player is in a territory
+-- ShowTerritoryNotification() - Displays territory notifications
+```
+
+### Implementation Notes
+
+- Region coloring uses native RedM functions to apply colors to predefined map regions
+- Custom areas use circular blips with transparency settings
+- Map overlays use a special styling technique to blend better with the map
+- Territory notifications include cooldown mechanisms to prevent spam
+- All visual elements are properly cleaned up when the resource stops
+
+## License
+
+This script is released under a Modified MIT License that restricts usage to personal, non-commercial purposes for the individual purchaser only. Redistribution, reselling, or sharing of this script is prohibited without explicit permission from the copyright holder.
+
+See the [LICENSE](./LICENSE) file for full details.
 
 ## Credits
 
-- By Salah
+Created by Salah
