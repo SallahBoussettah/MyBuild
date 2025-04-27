@@ -112,6 +112,44 @@ Config.MiningStores = {
         StoreClose = 24, -- 12 PM
         DynamicStore = true,
     },
+    AnnesburgStore = {
+        isDeactivated = false,
+        useRandomLocation = false,
+        possibleLocations = {
+            OpenMenu = {},
+            Npcs = {}
+        },
+        Blip = {
+            Allowed = true,
+            Name = "Annesburg Mining Store",
+            sprite = 1475879922,
+            Pos = vector3(2334.6914, 1096.7611, 103.5968), 
+        },
+        Npc = {
+            Pos = vector4(2334.6914, 1096.7611, 103.5968, 120.2152),
+            distanceRemoveNpc = 20.0,
+            Allowed = true,
+            Model = "U_M_M_BHT_MINEFOREMAN",
+        },
+        storeName = "Annesburg Store",
+        PromptName = "mining store",
+        distanceOpenStore = 3.0,
+        AllowedJobs = {},
+        JobGrade = 0,
+        category = {
+            { label = "Tools", Type = "tools", desc = "Mining equipment", img = "butcher_table_production" },
+            { label = "Ore", Type = "ore", desc = "Mining ores and materials", img = "provision_gold_nugget" },
+        },
+        storeType = {
+            { label = "Buy", Type = "buy", desc = "Buy mining equipment", img = "consumable_bread_roll" },
+            { label = "Sell", Type = "sell", desc = "Sell mining materials", img = "butcher_table_production" },
+        },
+        StoreHoursAllowed = true,
+        RandomPrices = true,
+        StoreOpen = 6, -- 6 AM
+        StoreClose = 24, -- 12 PM
+        DynamicStore = true,
+    },
 }
 
 -- Mining zones definitions
@@ -126,8 +164,8 @@ Config.MiningZones = {
         blip = true -- Show blip for this zone
     },
     {
-        coords = {x = 2276.6150, y = 1060.7690, z = 78.6585}, -- Annesburg Mine (example)
-        radius = 20.0,
+        coords = {x = 2297.6167, y = 1074.6997, z = 85.4345}, -- Annesburg Mine (example)
+        radius = 40.0,
         name = "Annesburg Mining",
         description = "The official Annesburg mining operation.",
         allow_mining = true,
