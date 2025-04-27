@@ -1,13 +1,12 @@
 Config = {}
 
--- USAGE OPTIONS
--- Use /guntrick or /gt in chat to toggle gun tricks
+-- USAGE: Use /guntrick or /gt in chat to toggle gun tricks
 
 -- GAMEPLAY SETTINGS
--- No notifications when aiming/shooting - menu will close silently
--- and animations will continue to play naturally
+Config.AllowAnimationsToFinish = true -- If true, animations continue when aiming/shooting 
+                                      -- (TAB key will always stop animations)
 
--- Control prompts - using the specified RedM control codes
+-- Control prompts
 Config.Prompts = {
     Do = 0xE30CD707,    -- [R]
     End = 0xB238FE0B,   -- [TAB]
@@ -15,7 +14,7 @@ Config.Prompts = {
     Next = 0xDEB34313,  -- [RIGHT ARROW]
 }
 
--- Gun tricks available in the menu
+-- Gun tricks available
 Config.Tricks = {
     {`KIT_EMOTE_TWIRL_GUN`, "Twirl"},
     {`KIT_EMOTE_TWIRL_GUN_DUAL`, "Dual Twirl"},
@@ -25,5 +24,5 @@ Config.Tricks = {
     {`KIT_EMOTE_TWIRL_GUN_VAR_D`, "Twirl D"},
 }
 
--- Notifications settings
-Config.UseVORPNotify = true -- Set to false if you want to use default game notifications
+-- Use VORP notifications instead of native
+Config.UseVORPNotify = true

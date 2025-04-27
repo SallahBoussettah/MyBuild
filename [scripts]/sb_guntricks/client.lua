@@ -3,19 +3,135 @@
     Gun Trick Script for VORP Framework
     
     Author: Salah
+    Modified to require bounty hunter license
 ]]
 
 -- Import VORP Core for Notifications (if needed)
 local VORPcore = {}
+local VORPinventory = {}
+local hasLicense = false
+local forceCheckCooldown = 0 -- Prevent too many server calls
+local registeredCallbacks = {} -- Track registered callback handlers
 
+-- Get VORP core for notifications
 if Config.UseVORPNotify then
     TriggerEvent("getCore", function(core)
         VORPcore = core
     end)
 end
 
--- Debug print to confirm script is running
-print("SB Gun Tricks: Script started")
+-- Function to check if player has bounty hunter license
+function CheckBountyLicense()
+    TriggerServerEvent("sb_guntricks:checkLicense")
+end
+
+-- Function to properly remove event handlers (avoiding removal errors)
+function SafeRemoveEventHandler(eventName, handlerId)
+    if registeredCallbacks[eventName] and registeredCallbacks[eventName][handlerId] then
+        RemoveEventHandler(registeredCallbacks[eventName][handlerId])
+        registeredCallbacks[eventName][handlerId] = nil
+    end
+end
+
+-- Function to force a license check with server
+function ForceCheckLicense(callback)
+    -- Use a cooldown to prevent spamming the server
+    local currentTime = GetGameTimer()
+    if currentTime - forceCheckCooldown < 2000 then
+        if callback then callback(hasLicense) end
+        return -- Still on cooldown
+    end
+    
+    forceCheckCooldown = currentTime
+    
+    -- If there's a callback, create an event handler
+    if callback then
+        -- Create a unique ID for this callback
+        local callbackId = "cb_" .. currentTime
+        local eventName = "sb_guntricks:licenseResponse"
+        
+        -- Initialize the event handler table if needed
+        if not registeredCallbacks[eventName] then
+            registeredCallbacks[eventName] = {}
+        end
+        
+        -- Register the event handler only once
+        if not registeredCallbacks[eventName].initialized then
+            registeredCallbacks[eventName].initialized = true
+            
+            RegisterNetEvent(eventName)
+            AddEventHandler(eventName, function(responseId, hasItem)
+                -- Only process if we have a handler for this response ID
+                if registeredCallbacks[eventName] and registeredCallbacks[eventName][responseId] then
+                    -- Update license status
+                    hasLicense = hasItem
+                    
+                    -- Call the associated callback
+                    if type(registeredCallbacks[eventName][responseId].callback) == "function" then
+                        registeredCallbacks[eventName][responseId].callback(hasItem)
+                    end
+                    
+                    -- Clean up this specific callback but keep the event handler
+                    registeredCallbacks[eventName][responseId] = nil
+                end
+            end)
+        end
+        
+        -- Store the callback in our table
+        registeredCallbacks[eventName][callbackId] = {
+            callback = callback,
+            timestamp = currentTime
+        }
+        
+        -- Set a timeout to clean up if server doesn't respond
+        Citizen.SetTimeout(3000, function()
+            if registeredCallbacks[eventName] and registeredCallbacks[eventName][callbackId] then
+                -- Call callback with current value as fallback
+                if type(registeredCallbacks[eventName][callbackId].callback) == "function" then
+                    registeredCallbacks[eventName][callbackId].callback(hasLicense)
+                end
+                
+                -- Remove the callback entry
+                registeredCallbacks[eventName][callbackId] = nil
+            end
+        end)
+        
+        -- Send request to server with our callback ID
+        TriggerServerEvent("sb_guntricks:forceCheck", callbackId)
+    else
+        -- Simple check without callback
+        TriggerServerEvent("sb_guntricks:forceCheck", nil)
+    end
+end
+
+-- Event to receive license check result
+RegisterNetEvent("sb_guntricks:licenseResult")
+AddEventHandler("sb_guntricks:licenseResult", function(hasItem)
+    local previousStatus = hasLicense
+    hasLicense = hasItem
+    
+    -- Only print and notify if the status has changed
+    if previousStatus ~= hasLicense then
+        if hasLicense then
+            -- Player received license
+            ShowNotification("You now have access to gun tricks. Use /guntrick or /gt to toggle.")
+        else
+            -- Player lost license
+            if tricking then
+                tricking = false
+                
+                -- Always clear animations when license is lost
+                local ped = PlayerPedId()
+                ClearPedTasks(ped)
+                
+                ShowNotification("Gun tricks disabled - license lost.")
+            elseif previousStatus then
+                -- Only notify if they had it before and lost it
+                ShowNotification("You no longer have access to gun tricks.")
+            end
+        end
+    end
+end)
 
 -- Local variables for prompts and trick management
 local TrickDoPrompt
@@ -30,19 +146,68 @@ local playingGunTrick = nil
 
 -- Register commands for toggling gun tricks
 Citizen.CreateThread(function()
+    -- Check for license on script start
+    Citizen.Wait(2000) -- Wait 2 seconds after script starts
+    CheckBountyLicense()
+    
     -- Command: /guntrick or /gt
     RegisterCommand('guntrick', function()
-        ToggleGunTricks()
+        -- Force a license check before proceeding to ensure we have current status
+        ForceCheckLicense(function(hasItem)
+            if hasItem then
+                ToggleGunTricks()
+            else
+                ShowNotification("You need a Bounty Hunter License to perform gun tricks.")
+            end
+        end)
     end, false)
     
     -- Shorter alias
     RegisterCommand('gt', function()
-        ToggleGunTricks()
+        -- Force a license check before proceeding to ensure we have current status
+        ForceCheckLicense(function(hasItem)
+            if hasItem then
+                ToggleGunTricks()
+            else
+                ShowNotification("You need a Bounty Hunter License to perform gun tricks.")
+            end
+        end)
     end, false)
     
-    -- Show welcome message on script start
-    Citizen.Wait(2000) -- Wait 2 seconds after script starts
-    ShowNotification("Gun Tricks loaded. Use /guntrick or /gt to toggle tricks.")
+    -- Set up a periodic check every 30 seconds (just to be safe)
+    Citizen.CreateThread(function()
+        while true do
+            Citizen.Wait(30000) -- 30 seconds
+            CheckBountyLicense()
+        end
+    end)
+    
+    -- Clean up old callbacks periodically
+    Citizen.CreateThread(function()
+        while true do
+            Citizen.Wait(10000) -- Every 10 seconds
+            
+            -- Get current time for comparing
+            local currentTime = GetGameTimer()
+            
+            -- Check each event type
+            for eventName, callbacks in pairs(registeredCallbacks) do
+                -- Skip the initialized flag
+                if eventName ~= "initialized" then
+                    -- Check each callback in this event
+                    for callbackId, callbackData in pairs(callbacks) do
+                        -- Skip the initialized flag
+                        if callbackId ~= "initialized" then
+                            -- If callback is older than 5 seconds, remove it
+                            if callbackData.timestamp and (currentTime - callbackData.timestamp) > 5000 then
+                                registeredCallbacks[eventName][callbackId] = nil
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end)
 end)
 
 -- Setup Trick Prompts
@@ -100,30 +265,56 @@ end
 
 -- Function to toggle gun tricks mode
 function ToggleGunTricks()
-    tricking = not tricking
-    print("SB Gun Tricks: Toggled, tricking = " .. tostring(tricking))
-    
-    if tricking then
-        ShowNotification("Gun tricks enabled")
-    else
-        ShowNotification("Gun tricks disabled")
-        -- No need to clear animations when manually exiting trick mode
-    end
+    -- Perform one more final check before toggling
+    ForceCheckLicense(function(hasItem)
+        if not hasItem then
+            ShowNotification("You need a Bounty Hunter License to perform gun tricks.")
+            tricking = false
+            
+            -- Always clear animations when toggling off
+            local ped = PlayerPedId()
+            ClearPedTasks(ped)
+            
+            return
+        end
+        
+        -- If we have the license, proceed with toggle
+        tricking = not tricking
+        
+        if tricking then
+            return
+        else
+            -- Always clear animations when toggling off
+            local ped = PlayerPedId()
+            ClearPedTasks(ped)
+        end
+    end)
 end
 
 -- Function to smoothly exit the gun tricks menu without interrupting animation
 function ExitGunTricksMenu()
     if tricking then
         tricking = false
-        print("SB Gun Tricks: Menu closed due to aim or fire")
-        -- No notification when menu is closed due to aiming/shooting
+        
+        -- Only clear animations if configured NOT to allow them to finish
+        if not Config.AllowAnimationsToFinish then
+            local ped = PlayerPedId()
+            ClearPedTasks(ped)
+        end
     end
 end
 
 -- Register the event handler for the keymapping
 RegisterNetEvent("sb_guntricks:toggle")
 AddEventHandler("sb_guntricks:toggle", function()
-    ToggleGunTricks()
+    -- Force a license check before proceeding to ensure we have current status
+    ForceCheckLicense(function(hasItem)
+        if hasItem then
+            ToggleGunTricks()
+        else
+            ShowNotification("You need a Bounty Hunter License to perform gun tricks.")
+        end
+    end)
 end)
 
 -- Display notification based on configuration
@@ -143,6 +334,11 @@ Citizen.CreateThread(function()
         Citizen.Wait(0)
         if tricking then
             local ped = PlayerPedId()
+            
+            -- Also check license status periodically when gun tricks are active
+            if GetGameTimer() % 5000 < 20 then -- Check roughly every 5 seconds
+                CheckBountyLicense()
+            end
             
             -- Check if player is aiming (two different aim detection methods for compatibility)
             if IsPlayerFreeAiming(PlayerId()) or Citizen.InvokeNative(0x916B8E075ABC8B4E, ped, true) then
@@ -166,6 +362,19 @@ Citizen.CreateThread(function()
         Citizen.Wait(4)
         
         if tricking and not IsEntityDead(PlayerPedId()) then
+            -- Check if player still has license
+            if not hasLicense then
+                tricking = false
+                ShowNotification("Gun tricks disabled - license required.")
+                
+                -- Always clear animations when license is lost
+                local ped = PlayerPedId()
+                ClearPedTasks(ped)
+                
+                Citizen.Wait(500)
+                goto continue
+            end
+            
             local label = CreateVarString(10, 'LITERAL_STRING', "Trick: " .. Config.Tricks[index][2])
             PromptSetActiveGroupThisFrame(TrickPrompts, label)
             
@@ -178,8 +387,12 @@ Citizen.CreateThread(function()
             end
             
             if Citizen.InvokeNative(0xC92AC953F0A982AE, TrickEndPrompt) then
+                -- Exit menu AND stop the animation when TAB is pressed
                 tricking = false
-                -- Don't forcibly clear animations when using the end prompt
+                
+                -- Always clear animations when TAB is pressed, regardless of config
+                local ped = PlayerPedId()
+                ClearPedTasks(ped)
             end
             
             if Citizen.InvokeNative(0xC92AC953F0A982AE, TrickNext) then
@@ -196,6 +409,8 @@ Citizen.CreateThread(function()
                 end
             end
         end
+        
+        ::continue::
     end
 end)
 
@@ -236,7 +451,10 @@ function TrickVariation(ind)
         if playingGunTrick ~= nil then
             emote = playingGunTrick
         end
+        -- Set current emote
         Citizen.InvokeNative(0xCBCFFF805F1B4596, ped, emote)
+        
+        -- Play animation with variation
         Citizen.InvokeNative(0xB31A277C1AC7B7FF, ped, 4, 1, Citizen.InvokeNative(0x2C4FEC3D0EFA9FC0, ped), true, false, false, false, false)
         Citizen.InvokeNative(0x01F661BB9C71B465, ped, 4, N_0xf4601c1203b1a78d(emote, ind))
         Citizen.InvokeNative(0x408CF580C5E96D49, ped, 4)
@@ -248,6 +466,4 @@ AddEventHandler('onResourceStop', function(resourceName)
     if (GetCurrentResourceName() ~= resourceName) then
         return
     end
-    tricking = false
-    -- Don't clear animations on resource stop
 end)
