@@ -995,14 +995,3 @@ INSERT IGNORE INTO `items` (`item`, `label`, `limit`, `can_remove`, `type`, `usa
 ('hk_132', 'House Key', 1, 1, 'item_standard', 1, '{}', 'A specialized house key.'),
 ('hk_133', 'House Key', 1, 1, 'item_standard', 1, '{}', 'A specialized house key.'),
 ('hk_134', 'House Key', 1, 1, 'item_standard', 1, '{}', 'A specialized house key.');
-
-select * from items where item = 'hk_134';
-
-insert into items (`item`, `label`, `limit`, `can_remove`, `type`, `usable`, `metadata`, `desc`) values 
-('lantern', 'Mining Lantern', 1, 1, 'item_standard', 0, '{}', 'A tool with a pointed end and a handle, used for breaking up rocks and mining.');
-
-select * from items where item = 'lanterna';
-
-delete from items where item = 'lantern';
-
-update items set item = 'lantern' where item = 'lanterna';
