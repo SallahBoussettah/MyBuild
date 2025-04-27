@@ -7,6 +7,9 @@ This folder contains custom scripts that extend the VORP Core framework for our 
 ### SB ColorMap
 A comprehensive map coloring resource that allows custom coloring of map regions, territory creation, and territory notifications to enhance player experience.
 
+### SB Gun Tricks
+A feature-rich resource allowing players to perform gun twirling tricks and flourishes with revolvers and pistols through a simple menu system.
+
 ### SB Mining Zone
 A comprehensive mining system resource focusing on creating realistic mining gameplay with designated mining zones and a complete mining economy.
 
