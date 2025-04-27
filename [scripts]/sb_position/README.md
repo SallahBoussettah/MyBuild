@@ -99,7 +99,7 @@ Config.Display = {
 ### Control Settings (`config.lua`)
 ```lua
 -- Key to toggle the position display (default: F3)
-Config.ToggleKey = 0x3B99E482  -- F3 key
+Config.ToggleKey = 0x3B99E482  -- F3 key (Not working currently)
 
 -- Commands
 Config.Commands = {

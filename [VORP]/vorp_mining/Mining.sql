@@ -12,5 +12,7 @@ INSERT IGNORE INTO items (`item`, `label`, `limit`, `can_remove`, `type`, `usabl
 
 insert into items (`item`, `label`, `limit`, `can_remove`, `type`, `usable`) values ('lantern', 'Lantern', 1, 1, 'item_standard', 1); 
 
-select * from items where item = 'pickaxe';
+delete from items where label = 'Lantern';
+
+select * from items where item = 'lantern';
 

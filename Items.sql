@@ -1,3 +1,4 @@
+-- Active: 1745684042909@@127.0.0.1@3306@1899rp
 INSERT IGNORE INTO `items` (`item`, `label`, `limit`, `can_remove`, `type`, `usable`, `metadata`, `desc`) VALUES
 ('acid', 'Acid', 10, 1, 'item_standard', 1, '{}', 'A corrosive substance used for various purposes.'),
 ('Agarita', 'Agarita', 10, 1, 'item_standard', 1, '{}', 'A flowering plant found in the wild, known for its medicinal properties.'),
@@ -365,7 +366,7 @@ INSERT IGNORE INTO `items` (`item`, `label`, `limit`, `can_remove`, `type`, `usa
 ('kit_bandana', 'Bandana', 2, 1, 'item_standard', 1, '{}', 'A versatile and stylish piece of cloth that can be worn around the neck or head for various purposes. It adds a touch of fashion to any outfit.'),
 ('lamppost1', 'Lamp Post 1 Set', 20, 1, 'item_standard', 1, '{}', 'A set of Lamp Post 1'),
 ('lamppost2', 'Lamp Post 2 Set', 20, 1, 'item_standard', 1, '{}', 'A set of Lamp Post 2'),
-('lanterna', 'Lantern', 20, 1, 'item_standard', 1, '{}', 'A lantern'),
+('lantern', 'Lantern', 20, 1, 'item_standard', 1, '{}', 'A lantern'),
 ('leather', 'Leather', 50, 1, 'item_standard', 1, '{}', 'Leather material'),
 ('leatherchair', 'Leather Chair', 20, 1, 'item_standard', 1, '{}', 'A leather chair'),
 ('leather_chair', 'Leather Chair', 20, 1, 'item_standard', 1, '{}', 'A leather chair'),
@@ -998,6 +999,10 @@ INSERT IGNORE INTO `items` (`item`, `label`, `limit`, `can_remove`, `type`, `usa
 select * from items where item = 'hk_134';
 
 insert into items (`item`, `label`, `limit`, `can_remove`, `type`, `usable`, `metadata`, `desc`) values 
-('pickaxe', 'Pickaxe', 1, 1, 'item_standard', 0, '{}', 'A tool with a pointed end and a handle, used for breaking up rocks and mining.');
+('lantern', 'Mining Lantern', 1, 1, 'item_standard', 0, '{}', 'A tool with a pointed end and a handle, used for breaking up rocks and mining.');
 
-select * from items where item = 'goldnugget';
+select * from items where item = 'lanterna';
+
+delete from items where item = 'lantern';
+
+update items set item = 'lantern' where item = 'lanterna';
