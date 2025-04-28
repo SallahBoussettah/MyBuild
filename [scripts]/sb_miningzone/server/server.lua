@@ -753,4 +753,38 @@ end)
 -- Export function to get mining stores info
 exports('GetMiningStores', function()
     return Config.MiningStores
-end) 
+end)
+
+-- Register event listener for successful mining operations
+-- This event will be triggered from the client when a mining operation succeeds
+RegisterServerEvent("sb_miningzone:addMiningXP")
+AddEventHandler("sb_miningzone:addMiningXP", function(inMiningZone)
+    local _source = source
+    
+    -- Get player character
+    local Character = VORPcore.getUser(_source).getUsedCharacter
+    if not Character then return end
+    
+    -- Calculate XP amount
+    local xpAmount = Config.MiningXP.BaseXP
+    
+    -- Apply zone multiplier if in a mining zone
+    if inMiningZone and Config.MiningXP.ZoneMultiplier > 1.0 then
+        xpAmount = xpAmount * Config.MiningXP.ZoneMultiplier
+    end
+    
+    -- Add random bonus if enabled
+    if Config.MiningXP.RandomBonus.Enabled then
+        local bonus = math.random(Config.MiningXP.RandomBonus.Min, Config.MiningXP.RandomBonus.Max)
+        xpAmount = xpAmount + bonus
+    end
+    
+    -- Round XP to nearest integer
+    xpAmount = math.floor(xpAmount + 0.5)
+    
+    -- Add XP to character
+    Character.addXp(xpAmount)
+    
+    -- Notify player
+    VORPcore.NotifyRightTip(_source, "Mining experience gained: " .. xpAmount .. " XP", 3000)
+end)

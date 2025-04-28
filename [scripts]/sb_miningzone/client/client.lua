@@ -793,6 +793,10 @@ end)
 -- When mining finishes reset state
 AddEventHandler("vorp_mining:finishedMining", function()
     playerMiningState = "idle"
+    
+    -- Trigger the XP reward event on the server
+    -- Pass the inMiningZone flag to determine XP bonus based on mining in proper zones
+    TriggerServerEvent("sb_miningzone:addMiningXP", inMiningZone)
 end)
 
 -- Handler for receiving player inventory data

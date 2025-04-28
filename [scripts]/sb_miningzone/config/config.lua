@@ -187,3 +187,14 @@ Config.StrictRestriction = true
 -- Instead of completely restricting mining, you can reduce success chance outside zones
 Config.ReducedSuccessOutsideZones = false -- Only works if StrictRestriction is false
 Config.OutsideZoneSuccessModifier = 0.3 -- 30% of normal success chance 
+
+-- XP rewards for mining
+Config.MiningXP = {
+    BaseXP = 25,             -- Base XP awarded per successful mining
+    ZoneMultiplier = 1.5,    -- Multiplier for mining in designated zones (50% bonus)
+    RandomBonus = {
+        Enabled = true,      -- Enable random bonus XP
+        Min = 5,             -- Minimum random bonus
+        Max = 15             -- Maximum random bonus
+    }
+} 
