@@ -16,6 +16,9 @@ A comprehensive mining system resource focusing on creating realistic mining gam
 ### SB Prison Break
 A prison escape system allowing players to break out of jail cells using dynamite and providing law enforcement alerts for immersive roleplay.
 
+### SB Robbery
+A comprehensive bank robbery system allowing players to purchase dynamite from NPCs, rob banks, and collect rewards with full police notification integration.
+
 ### SB Safe Zone
 A comprehensive safe zone system allowing server administrators to create designated non-combat areas with custom notifications and visual indicators.
 

@@ -15,6 +15,7 @@ Config.NPCS = {
 
 -- Timer and zone size
 Config.robberyCooldown = 7200000 -- 2 hours in milliseconds
+Config.storeRobberyCooldown = 3600000 -- 1 hour in milliseconds for stores
 Config.ZoneSize = 2.0 -- 
 Config.LockpickTime = 120000 
 Config.Policealert = 5000 
@@ -26,14 +27,20 @@ Config.PoliceJobs = {
 }
 
 
-Config.MinPolice = 1 
+Config.MinPolice = 1 -- Minimum police for store robbery
 
 Config.MinBankPolice = 1 
 
 
-Config.StoreItems = {
-    { itemName = "goldbar", amount = 1 },  
-    { itemName = "diamond", amount = 0 }, 
+-- Store robbery cash rewards
+Config.StoreRewards = {
+    {amount = 50, chance = 5},   -- $50 - 5% chance
+    {amount = 40, chance = 15},  -- $40 - 10% chance (cumulative 15%)
+    {amount = 30, chance = 30},  -- $30 - 15% chance (cumulative 30%)
+    {amount = 25, chance = 50},  -- $25 - 20% chance (cumulative 50%)
+    {amount = 20, chance = 75},  -- $20 - 25% chance (cumulative 75%)
+    {amount = 15, chance = 90},  -- $15 - 15% chance (cumulative 90%)
+    {amount = 10, chance = 100}  -- $10 - 10% chance (cumulative 100%)
 }
 
 
@@ -43,7 +50,7 @@ Config.BankItems = {
 }
 
 
-
+-- Stores that can be robbed
 Config.Shops = {
     { coords = vector3(-324.2566, 804.1712, 116.8816), name = "Valentine General Store" },
     { coords = vector3(2825.3081, -1320.1149, 45.7553), name = "Saint Denis General Store"},
@@ -74,10 +81,12 @@ Config.Languages = {
         langCode = 'en',
         rob = 'START ROBBERY',
         bankRobbery = 'Bank Robbery',
+        storeRobbery = 'Store Robbery',
         enterPrompt = 'Press [~e~ENTER~q~] to start the robbery',
         talkPrompt = 'Press [~e~ENTER~q~] to talk about the bank robbery',
         acceptPrompt = 'Press [~e~ENTER~q~] to accept',
         robberyInProgress = 'Press [~e~ENTER~q~] to start the robbery',
+        storeRobberyPrompt = 'Press [~e~ENTER~q~] to rob this store',
         dynamiteBlowMessage2 = 'You are placing the dynamite.',
         dynamiteBlowMessage = 'The dynamite will explode! Get away! Find cover!',
         robberySuccess = 'You are searching in the vault',
@@ -95,12 +104,17 @@ Config.Languages = {
         dynamiteGiven = 'Here are the banks you can rob: %s! You got the dynamite. Finish the job.',
         robberyStarted = 'Robbery has started!',
         lootObtained = 'You found something in the vault!',
+        cashObtained = 'You stole $%d from the register!',
+        storeRobberyStarted = 'You are threatening the store clerk...',
+        storeRobberySuccess = 'You successfully robbed the store!',
         notEnoughMoneyLoot = 'You don\'t have enough money, you cannot take the loot!',
         BankrobberyLoot = 'Press [~e~ENTER~q~] to search the vault',
         bankRobberyMessage = 'This bank has been robbed before.',
         storeRobberyMessage = 'This place has been robbed before.',
         bankCooldownMessage = 'The bank will be available to rob again in %d minutes.',
+        storeCooldownMessage = 'The store will be available to rob again in %d minutes.',
         bankOnCooldown = 'This bank cannot be robbed for another %s.',
+        storeOnCooldown = 'This store cannot be robbed for another %s.',
         hour = 'hour',
         hours = 'hours',
         minute = 'minute',
