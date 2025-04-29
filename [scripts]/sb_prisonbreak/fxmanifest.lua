@@ -6,6 +6,15 @@ author 'Salah'
 description 'A system for teleporting out of prison cells'
 version '1.0.0'
 
+lua54 'yes'
+
+escrow_ignore {
+    'config.lua',
+    'README.md',
+    'LICENSE',
+    'teleport_state.json'
+}
+
 shared_scripts {
     'config.lua',
 }

@@ -50,9 +50,18 @@ Each script is contained in its own folder and follows the VORP Core architectur
 
 ## License
 
-All scripts in this collection are released under a Modified MIT License that restricts usage to personal, non-commercial purposes for the individual purchaser only. Redistribution, reselling, or sharing of these scripts is prohibited without explicit permission from the copyright holder.
+All scripts in this collection are protected by the cfx.re Escrow and Keymaster system and are licensed exclusively to the individual purchaser. The license is tied to the purchaser's cfx.re account.
+
+### Key License Terms:
+- Scripts are bound to the purchaser's cfx.re account license key
+- Only the config.lua file(s) may be modified
+- No redistribution, reselling, or transfer allowed
+- No decompilation or reverse engineering permitted
+- For use only on servers owned/operated by the purchaser
 
 See the LICENSE file in each script folder for full details.
+
+**IMPORTANT**: Attempting to circumvent the protection system or violate license terms will result in immediate termination of your license without refund.
 
 ## Credits
 

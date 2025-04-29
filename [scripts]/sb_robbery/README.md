@@ -97,7 +97,19 @@ When a robbery begins, all players with a police job will be notified and a mark
 - Version: 1.1.0
 
 ## License
-This script is property of the author. Unauthorized distribution or modification is prohibited.
+
+This script is protected by the cfx.re Escrow and Keymaster system and is licensed exclusively to the individual purchaser. The license is tied to the purchaser's cfx.re account.
+
+### Key License Terms:
+- Script is bound to the purchaser's cfx.re account license key
+- Only the config.lua file(s) may be modified
+- No redistribution, reselling, or transfer allowed
+- No decompilation or reverse engineering permitted
+- For use only on servers owned/operated by the purchaser
+
+For complete license terms, please see the [LICENSE](./LICENSE) file included with this script.
+
+**IMPORTANT**: Attempting to circumvent the protection system or violate license terms will result in immediate termination of your license without refund.
 
 ## Support
 For support, contact the author directly.

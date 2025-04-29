@@ -1,28 +1,39 @@
-Modified MIT License
+# LICENSE AGREEMENT FOR SALAH SCRIPTS
 
-Copyright (c) 2025 Salah
+Copyright (c) 2023-2024 Salah Scripts
 
-Permission is hereby granted, free of charge, to the individual purchaser of this
-software and associated documentation files (the "Software"), to use the Software
-for personal, non-commercial purposes only, subject to the following conditions:
+## TERMS AND CONDITIONS
 
-1. The Software may only be used by the individual purchaser on servers owned or
-   operated by the purchaser.
+1. **LICENSE GRANT**:
+   This script is licensed exclusively to the individual purchaser and is tied to their cfx.re account license key. The purchaser is granted a non-transferable, non-exclusive right to use the script on servers owned or operated by the purchaser.
 
-2. Redistribution, reselling, or sharing of the Software or any derivative works 
-   based on the Software is strictly prohibited without explicit written permission
-   from the copyright holder.
+2. **RESTRICTIONS**:
+   - The purchaser MAY NOT redistribute, resell, lease, license, sub-license or offer the script to any third party.
+   - The script is protected by cfx.re Escrow and Keymaster system and MAY NOT be decompiled, reverse-engineered, or modified beyond configuration options explicitly provided in config.lua files.
+   - The purchaser MAY NOT attempt to circumvent the license protection or encryption mechanisms.
+   - The script MAY NOT be used on servers not owned or operated by the purchaser.
 
-3. Modification of the Software is permitted for personal use only, but modified
-   versions cannot be redistributed or shared.
+3. **CONFIGURATION RIGHTS**:
+   - The purchaser MAY modify ONLY the config.lua file(s) provided with the script.
+   - All other files are encrypted and protected by the cfx.re Escrow system.
 
-4. The above copyright notice and this permission notice shall be included in all
-   copies or substantial portions of the Software.
+4. **OWNERSHIP**:
+   - All rights, title, and interest in and to the script, including all intellectual property rights, remain with Salah Scripts.
+   - The purchaser acknowledges that they are receiving only a licensed right to use the script and not a transfer of title.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE. 
+5. **TERMINATION**:
+   - This license will terminate automatically if the purchaser breaches any of its terms and conditions.
+   - Upon termination, the purchaser must cease all use of the script.
+
+6. **WARRANTY DISCLAIMER**:
+   - The script is provided "as is" without warranty of any kind, either express or implied.
+   - Salah Scripts does not warrant that the script will meet specific requirements or that operation will be uninterrupted or error-free.
+
+7. **LIMITATION OF LIABILITY**:
+   - In no event shall Salah Scripts be liable for any damages including, without limitation, direct, indirect, special, incidental, or consequential damages arising out of the use or inability to use the script.
+
+8. **UPDATES AND SUPPORT**:
+   - Support and updates are provided at the discretion of Salah Scripts.
+   - There is no guarantee of continued support or compatibility with future versions of frameworks or game platforms.
+
+By purchasing and using this script, the purchaser acknowledges that they have read, understood, and agreed to the terms of this license.
