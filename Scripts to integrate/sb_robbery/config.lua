@@ -14,7 +14,7 @@ Config.NPCS = {
 }
 
 -- Timer and zone size
-Config.robberyCooldown = 7200000 -- 2 hours in milliseconds
+Config.robberyCooldown = 120000 -- 
 Config.ZoneSize = 2.0 -- 
 Config.LockpickTime = 120000 
 Config.Policealert = 5000 
@@ -59,7 +59,7 @@ Config.startbankheist = vector3(-1786.1436, -397.5865, 155.6201)
 
 Config.Banks = {
     
-    -- { coords = vector3(1290.0882, -1312.4019, 76.0399), name = "Rhodes Bank" },
+    { coords = vector3(1290.0882, -1312.4019, 76.0399), name = "Rhodes Bank" },
     { coords = vector3(-820.1022, -1273.4377, 43.6513), name = "Blackwater Bank" },
 }
 
@@ -98,13 +98,6 @@ Config.Languages = {
         notEnoughMoneyLoot = 'You don\'t have enough money, you cannot take the loot!',
         BankrobberyLoot = 'Press [~e~ENTER~q~] to search the vault',
         bankRobberyMessage = 'This bank has been robbed before.',
-        storeRobberyMessage = 'This place has been robbed before.',
-        bankCooldownMessage = 'The bank will be available to rob again in %d minutes.',
-        bankOnCooldown = 'This bank cannot be robbed for another %s.',
-        hour = 'hour',
-        hours = 'hours',
-        minute = 'minute',
-        minutes = 'minutes',
-        ["and"] = 'and'
+        storeRobberyMessage = 'This place has been robbed before.',        
     }
 }

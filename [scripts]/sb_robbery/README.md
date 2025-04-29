@@ -1,72 +1,103 @@
-# Pogue Robbery Script
+# SB Robbery System
 
-## Overview
+## Description
+A comprehensive bank robbery system for RedM/VORP Framework. This script allows players to purchase dynamite from an NPC, rob banks, and collect rewards.
 
-The NPC script is designed to enhance gameplay by introducing Non-Player Characters (NPCs) that interact with players during various robbery scenarios, such as bank and store heists. This script manages NPC behavior, police presence checks, alert notifications, and the mechanics of executing robberies.
+## Features
+- NPC interaction with dialogue system
+- Purchase dynamite from the NPC
+- Random bank selection from available banks
+- Dynamite placement and explosion mechanics
+- Vault searching and reward collection
+- Police notification system with map markers
+- Cooldown system for banks
+- Full integration with VORP Core and VORP Inventory
 
----
+## Dependencies
+- vorp_core
+- vorp_inventory
+- vorp_progressbar
 
-## Functionalities
+## Installation
+1. Ensure you have all dependencies installed and working
+2. Extract the `sb_robbery` folder to your `resources/[scripts]` directory
+3. Add `ensure sb_robbery` to your server.cfg file
+4. Restart your server
 
-### 1. Bank Robbery
+## Configuration
+The script is highly configurable through the `config.lua` file:
 
-The bank robbery feature allows players to initiate a robbery by interacting with a designated NPC. This NPC serves as a point of contact for the robbery, providing the player with necessary information or starting the robbery process.
+### NPC Settings
+Configure the NPC that sells dynamite for bank robberies:
+```lua
+Config.NPCS = {
+    {
+        coords = vector4(-1786.1436, -397.5865, 155.6201, 51.1322), -- Npc coordinates
+        model = 'A_M_M_UniGunslinger_01', -- Npc model
+        outfit = false,
+    },
+}
+```
 
-- **Interaction**: Players can approach the NPC and trigger a conversation or action that leads to the bank robbery.
-- **Requirements**: The script checks if the player has necessary items, such as dynamite, and verifies if there is sufficient police presence in the area.
-- **Execution**: Upon meeting the requirements, the robbery is executed, and players are rewarded based on their actions.
+### Bank Settings
+Configure the available banks for robbery:
+```lua
+Config.Banks = {
+    { coords = vector3(1290.0882, -1312.4019, 76.0399), name = "Rhodes Bank" },
+    { coords = vector3(-820.1022, -1273.4377, 43.6513), name = "Blackwater Bank" },
+}
+```
 
-### 2. Store Robbery
+### Reward Settings
+Configure the items players can receive from bank robberies:
+```lua
+Config.BankItems = {
+    { itemName = "diamond", amount = 3 },   
+    { itemName = "goldbar", amount = 2 }, 
+}
+```
 
-Similar to bank robberies, the store robbery feature enables players to rob stores through NPC interactions.
+### Other Settings
+- `Config.robberyCooldown`: Time (in ms) before a bank can be robbed again
+- `Config.ZoneSize`: Size of the interaction zone around NPCs and banks
+- `Config.DynamitePrice`: Price to purchase dynamite
+- `Config.MinBankPolice`: Minimum number of police required online for bank robbery
+- `Config.PoliceJobs`: Jobs considered as police
 
-- **Interaction**: Players can interact with the NPC to initiate the robbery.
-- **Cooldown Management**: The script manages cooldown periods to prevent players from robbing the same store repeatedly in a short amount of time.
-- **Rewards**: Successful robberies lead to players receiving items and other benefits.
+## Usage
+1. Approach the robbery NPC (configured in `config.lua`)
+2. Interact with the NPC to purchase dynamite (costs configured amount)
+3. The NPC will randomly select one of the available banks
+4. Travel to the selected bank
+5. Plant the dynamite at the bank
+6. Wait for the explosion
+7. Search the vault for rewards
 
-### 3. Police Checks
+## Police Notification
+When a robbery begins, all players with a police job will be notified and a marker will appear on their map showing the location of the robbery.
 
-To maintain balance and realism in the gameplay, the script includes checks for police presence.
+## Technical Details
 
-- **Count Verification**: Before allowing a robbery, the script verifies how many players are currently in police roles.
-- **Restriction**: If there are not enough police present, the robbery cannot proceed, and the player receives a notification explaining the situation.
+### Client-Side
+- NPC spawning and interaction
+- Dialogue system for NPC conversations
+- Dynamite placement and explosion effects
+- Vault searching mechanics
+- UI prompts and notifications
 
-### 4. Alert Notifications
+### Server-Side
+- Money handling (via VORP Core)
+- Inventory management (via VORP Inventory)
+- Police notification system
+- Reward distribution
+- Bank cooldown system
 
-When a robbery is initiated, alert notifications are sent to nearby police player, enhancing the dynamic interaction within the game.
+## Credits
+- Author: Salah
+- Version: 1.1.0
 
-- **Notification System**: The script triggers an alert that informs all relevant police players about the ongoing robbery.
-- **Coordination**: Alerts include coordinates and details that guide police towards the location of the crime, enabling them to respond effectively.
+## License
+This script is property of the author. Unauthorized distribution or modification is prohibited.
 
----
-
-## Conclusion
-
-This NPC script provides essential functionalities that create an immersive and interactive environment for players engaging in robbery activities. By managing NPC interactions, police checks, and alert notifications, the script adds depth to gameplay and enhances the overall experience.
-
----
-
-The `Config` table includes several settings that are either required or optional for the gameplay mechanics. Here’s a brief summary of the optional settings:
-
-### Optional Settings
-
-1. **Config.NPCS**: 
-   - **outfit**: This parameter is optional. If not specified, the NPC will use a default outfit. If included, it allows for a custom outfit preset for the NPC.
-
-2. **Config.robberyCooldown**: 
-   - Optional; while it's beneficial to set a cooldown for robbery attempts, you could theoretically set it to `0` if you want to allow continuous attempts without waiting.
-
-3. **Config.ZoneSize**: 
-   - Optional; defines the interaction zone around robbery locations. You can adjust this size, but if omitted, the default behavior may apply based on your game's mechanics.
-
-4. **Config.DynamitePrice**: 
-   - Optional; it specifies the cost of dynamite used for robberies. If not defined, you could set a fixed price elsewhere in your logic.
-
-5. **Config.StoreItems & Config.BankItems**: 
-   - Optional; these tables define the rewards for successful robberies. If you choose not to use them, you can handle rewards differently within your script.
-
-6. **Config.Languages**: 
-   - Optional; while necessary for multilingual support, you can define only one language. If additional languages are not needed, you can simplify this section.
-
-7. **Config.Banks and Config.Shops**: 
-   - Optional; you can add banks or stores as needed for gameplay. This allows you to customize the robbery locations and the types of establishments available in your game world.
+## Support
+For support, contact the author directly.
