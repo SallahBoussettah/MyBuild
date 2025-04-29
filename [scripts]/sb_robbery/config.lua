@@ -22,28 +22,7 @@ Config.DynamitePrice = 1500
 
 
 Config.PoliceJobs = {
-    'offbwsheriff',
-    'offvalsheriff',
-    'offarmsheriff',
-    'offtwsheriff',
-    'offstbsheriff',
-    'offrhdsheriff',
-    'offsdsheriff',
-    'offannsheriff',
-    'offmarshal',
-    'offpinkerton',
-    'offpolice',
-    'bwsheriff',
-    'valsheriff',
-    'armheriff',
-    'twsheriff',
-    'stbsheriff',
-    'rhdsheriff',
-    'sdsheriff',
-    'annsheriff',
-    'marshal',
-    'pinkerton',
-    'police'
+    'ValSheriff',
 }
 
 
@@ -54,13 +33,13 @@ Config.MinBankPolice = 1
 
 Config.StoreItems = {
     { itemName = "goldbar", amount = 1 },  
-    { itemName = "diamond", amount = 1 }, 
+    { itemName = "diamond", amount = 0 }, 
 }
 
 
 Config.BankItems = {
-    { itemName = "diamond", amount = 5 },   
-    { itemName = "goldbar", amount = 3 }, 
+    { itemName = "diamond", amount = 3 },   
+    { itemName = "goldbar", amount = 2 }, 
 }
 
 
