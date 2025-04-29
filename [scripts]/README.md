@@ -13,6 +13,9 @@ A feature-rich resource allowing players to perform gun twirling tricks and flou
 ### SB Mining Zone
 A comprehensive mining system resource focusing on creating realistic mining gameplay with designated mining zones and a complete mining economy.
 
+### SB Police
+A comprehensive police system offering complete law enforcement functionality with on/off duty management, multiple jail locations, community service, item searching, and department-specific storage access.
+
 ### SB Prison Break
 A prison escape system allowing players to break out of jail cells using dynamite and providing law enforcement alerts for immersive roleplay.
 
