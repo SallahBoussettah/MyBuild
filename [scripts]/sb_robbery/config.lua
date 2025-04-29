@@ -23,7 +23,7 @@ Config.DynamitePrice = 1500
 
 
 Config.PoliceJobs = {
-    'ValSheriff',
+    'police',
 }
 
 

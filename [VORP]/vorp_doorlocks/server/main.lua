@@ -135,8 +135,6 @@ CreateThread(function()
     end
 end)
 
-
-
 RegisterNetEvent("vorp_doorlocks:Server:AlertPolice", function(door)
     local _source <const> = source
 
@@ -146,8 +144,17 @@ RegisterNetEvent("vorp_doorlocks:Server:AlertPolice", function(door)
     if not lockpicking[_source] then return end
 
     local sourceCoords <const> = GetEntityCoords(GetPlayerPed(_source))
-    local distances <const> = {}
 
+    -- First check if the sb_police resource is running
+    local resourceState = GetResourceState('sb_police')
+    if resourceState == 'started' then
+        -- Directly use the AlertPolice export with the exact message from Config
+        exports['sb_police']:AlertPolice(_source, sourceCoords, Config.lang.Alerts.PoliceAlertMessage)
+        return -- Return early
+    end
+
+    -- Fallback to the original vorp_police alert system if sb_police isn't available
+    local distances <const> = {}
     for _, playerId in ipairs(GetPlayers()) do
         if Player(tonumber(playerId)).state.isPoliceDuty then
             local playerCoords <const> = GetEntityCoords(GetPlayerPed(tonumber(playerId)))
@@ -169,7 +176,6 @@ RegisterNetEvent("vorp_doorlocks:Server:AlertPolice", function(door)
     end
 end)
 
-
 AddEventHandler("vorp:SelectedCharacter", function(source, character)
     if Config.DevMode then return end
 
@@ -182,7 +188,6 @@ AddEventHandler("vorp:SelectedCharacter", function(source, character)
     local data <const> = msgpack.pack(gatherStates)
     TriggerClientEvent("vorp_doorlocks:Client:Sync", source, data)
 end)
-
 
 AddEventHandler("vorp:playerJobChange", function(source, newjob, oldjob)
     SetTimeout(1000, function() -- wait for statebags to be available

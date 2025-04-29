@@ -71,39 +71,52 @@ AddEventHandler("sb_prisonbreak:explode", function(coords)
     
     -- Alert law enforcement
     local officersAlerted = 0
-    local maxOfficersToAlert = 4 -- Number of closest officers to alert (matching VORP doorlocks config)
-    local officerDistances = {}
     
-    -- Find all on-duty police officers
-    for _, player in ipairs(players) do
-        -- Check if player is police and on duty (using VORP police state system)
-        if Player(tonumber(player)).state.isPoliceDuty then
-            local officerCoords = GetEntityCoords(GetPlayerPed(tonumber(player)))
-            local distance = #(coords - officerCoords)
-            table.insert(officerDistances, { id = player, distance = distance })
-        end
-    end
-    
-    -- Sort officers by distance
-    if #officerDistances > 0 then
-        table.sort(officerDistances, function(a, b) return a.distance < b.distance end)
+    -- Check if sb_police is running and use its alert system
+    local resourceState = GetResourceState('sb_police')
+    if resourceState == 'started' then
+        -- Use the sb_police export for alert with our custom explosion message
+        officersAlerted = exports['sb_police']:AlertPolice(_source, coords, "Explosion detected at Strawberry Jail! Possible break attempt.")
+    else
+        -- Fallback to original notification method if sb_police isn't available
+        local maxOfficersToAlert = 4 -- Number of closest officers to alert
+        local officerDistances = {}
         
-        -- Alert the closest officers (up to maxOfficersToAlert)
-        for i = 1, math.min(maxOfficersToAlert, #officerDistances) do
-            local officer = officerDistances[i]
-            -- Create blip and notification for each officer
-            TriggerClientEvent("vorp_police:Client:AlertPolice", tonumber(officer.id), coords)
+        -- Find all on-duty police officers
+        for _, player in ipairs(players) do
+            -- Check specifically for the jobs: police, marshal, sheriffrhodes, lawmen
+            local Character = VORPcore.getUser(tonumber(player)).getUsedCharacter
+            local job = Character.job
             
-            -- Send custom notification
-            TriggerClientEvent("vorp:NotifyLeft", tonumber(officer.id), 
-                "Explosion Alert", 
-                "Explosion detected at Strawberry Jail! Possible break attempt.", 
-                "inventory_items", 
-                "provision_sheriff_star", 
-                8000, 
-                "COLOR_RED")
+            -- Check if the player's job is one of the specified law enforcement jobs
+            if job == "police" or job == "marshal" or job == "sheriffrhodes" or job == "lawmen" then
+                local officerCoords = GetEntityCoords(GetPlayerPed(tonumber(player)))
+                local distance = #(coords - officerCoords)
+                table.insert(officerDistances, { id = player, distance = distance })
+            end
+        end
+        
+        -- Sort officers by distance
+        if #officerDistances > 0 then
+            table.sort(officerDistances, function(a, b) return a.distance < b.distance end)
+            
+            -- Alert the closest officers (up to maxOfficersToAlert)
+            for i = 1, math.min(maxOfficersToAlert, #officerDistances) do
+                local officer = officerDistances[i]
+                -- Create blip and notification for each officer
+                TriggerClientEvent("vorp_police:Client:AlertPolice", tonumber(officer.id), coords)
                 
-            officersAlerted = officersAlerted + 1
+                -- Send custom notification
+                TriggerClientEvent("vorp:NotifyLeft", tonumber(officer.id), 
+                    "Explosion Alert", 
+                    "Explosion detected at Strawberry Jail! Possible break attempt.", 
+                    "inventory_items", 
+                    "provision_sheriff_star", 
+                    8000, 
+                    "COLOR_RED")
+                    
+                officersAlerted = officersAlerted + 1
+            end
         end
     end
     
@@ -139,39 +152,52 @@ AddEventHandler("sb_prisonbreak:alertLaw", function(coords)
     -- Get all online players
     local players = GetPlayers()
     local officersAlerted = 0
-    local maxOfficersToAlert = 4 -- Number of closest officers to alert (matching VORP doorlocks config)
-    local officerDistances = {}
     
-    -- Find all on-duty police officers
-    for _, player in ipairs(players) do
-        -- Check if player is police and on duty (using VORP police state system)
-        if Player(tonumber(player)).state.isPoliceDuty then
-            local officerCoords = GetEntityCoords(GetPlayerPed(tonumber(player)))
-            local distance = #(coords - officerCoords)
-            table.insert(officerDistances, { id = player, distance = distance })
-        end
-    end
-    
-    -- Sort officers by distance
-    if #officerDistances > 0 then
-        table.sort(officerDistances, function(a, b) return a.distance < b.distance end)
+    -- Check if sb_police is running and use its alert system
+    local resourceState = GetResourceState('sb_police')
+    if resourceState == 'started' then
+        -- Use the sb_police export for alert with our custom prison break message
+        officersAlerted = exports['sb_police']:AlertPolice(_source, coords, "Prison break in progress at Strawberry Jail!")
+    else
+        -- Fallback to original notification method if sb_police isn't available
+        local maxOfficersToAlert = 4 -- Number of closest officers to alert
+        local officerDistances = {}
         
-        -- Alert the closest officers (up to maxOfficersToAlert)
-        for i = 1, math.min(maxOfficersToAlert, #officerDistances) do
-            local officer = officerDistances[i]
-            -- Create blip and notification for each officer
-            TriggerClientEvent("vorp_police:Client:AlertPolice", tonumber(officer.id), coords)
+        -- Find all on-duty police officers
+        for _, player in ipairs(players) do
+            -- Check specifically for the jobs: police, marshal, sheriffrhodes, lawmen
+            local Character = VORPcore.getUser(tonumber(player)).getUsedCharacter
+            local job = Character.job
             
-            -- Send custom notification
-            TriggerClientEvent("vorp:NotifyLeft", tonumber(officer.id), 
-                "Prison Break Alert", 
-                "Prison break in progress at Strawberry Jail!", 
-                "inventory_items", 
-                "provision_sheriff_star", 
-                8000, 
-                "COLOR_RED")
+            -- Check if the player's job is one of the specified law enforcement jobs
+            if job == "police" or job == "marshal" or job == "sheriffrhodes" or job == "lawmen" then
+                local officerCoords = GetEntityCoords(GetPlayerPed(tonumber(player)))
+                local distance = #(coords - officerCoords)
+                table.insert(officerDistances, { id = player, distance = distance })
+            end
+        end
+        
+        -- Sort officers by distance
+        if #officerDistances > 0 then
+            table.sort(officerDistances, function(a, b) return a.distance < b.distance end)
+            
+            -- Alert the closest officers (up to maxOfficersToAlert)
+            for i = 1, math.min(maxOfficersToAlert, #officerDistances) do
+                local officer = officerDistances[i]
+                -- Create blip and notification for each officer
+                TriggerClientEvent("vorp_police:Client:AlertPolice", tonumber(officer.id), coords)
                 
-            officersAlerted = officersAlerted + 1
+                -- Send custom notification
+                TriggerClientEvent("vorp:NotifyLeft", tonumber(officer.id), 
+                    "Prison Break Alert", 
+                    "Prison break in progress at Strawberry Jail!", 
+                    "inventory_items", 
+                    "provision_sheriff_star", 
+                    8000, 
+                    "COLOR_RED")
+                    
+                officersAlerted = officersAlerted + 1
+            end
         end
     end
     
@@ -319,6 +345,81 @@ AddEventHandler('onResourceStart', function(resourceName)
         
         if data and data.teleportTime then
             lastTeleportTime = data.teleportTime
+        end
+    end
+end)
+
+-- Event handler for when a player rejoins - sends them the current teleport state
+RegisterServerEvent("sb_prisonbreak:getServerState")
+AddEventHandler("sb_prisonbreak:getServerState", function()
+    local _source = source
+    TriggerClientEvent("sb_prisonbreak:setTeleportState", _source, teleportEnabled)
+end)
+
+-- ADDED: Handle unjail player request from client after successful teleport
+RegisterServerEvent("sb_prisonbreak:unjailPlayer")
+AddEventHandler("sb_prisonbreak:unjailPlayer", function()
+    local _source = source
+    local target_id = _source -- The player who wants to be unjailed is the one who sent the event
+    
+    -- Check if sb_police is running
+    local resourceState = GetResourceState('sb_police')
+    if resourceState == 'started' then
+        -- Get the jail location of the player first
+        local Character = VORPcore.getUser(target_id).getUsedCharacter
+        local CharacterID = Character.charIdentifier
+        local steam_id = Character.identifier
+        
+        -- Query the jail database to get the player's jail location
+        exports.ghmattimysql:execute("SELECT * FROM `jail` WHERE characterid = @characterid",
+            { ["@characterid"] = CharacterID }
+            , function(result)
+                if result[1] then
+                    local jailLocation = result[1]["jaillocation"]
+                    
+                    -- Check if the player is in Strawberry jail
+                    if jailLocation == "st" then
+                        -- For Strawberry jail, we'll handle the teleport differently
+                        -- First, delete the player from jail database to free them
+                        exports.ghmattimysql:execute("DELETE FROM jail WHERE identifier = @identifier AND characterid = @characterid",
+                            { ["@identifier"] = steam_id, ["@characterid"] = CharacterID })
+                        
+                        -- Then trigger a custom unjail event that won't teleport the player
+                        TriggerClientEvent("sb_prisonbreak:CustomUnjail", target_id)
+                        
+                        -- Debug message
+                        if Config.Debug then
+                            Debug("Player " .. _source .. " automatically unjailed from Strawberry jail without teleport")
+                        end
+                    else
+                        -- For other jails, use the regular unjail system
+                        TriggerEvent("sb_police:finishedjail", target_id)
+                        
+                        -- Debug message
+                        if Config.Debug then
+                            Debug("Player " .. _source .. " automatically unjailed from " .. jailLocation .. " jail")
+                        end
+                    end
+                    
+                    -- Notify the player they were unjailed
+                    TriggerClientEvent("vorp:NotifyLeft", _source, 
+                        "Prison Break", 
+                        "You have successfully escaped from jail!", 
+                        "inventory_items", 
+                        "consumable_special_treasure_map", 
+                        8000, 
+                        "COLOR_GREEN")
+                else
+                    -- If no jail record was found
+                    if Config.Debug then
+                        Debug("Player " .. _source .. " tried to unjail but no jail record was found")
+                    end
+                end
+            end)
+    else
+        -- If sb_police is not running, log a debug message
+        if Config.Debug then
+            Debug("Failed to unjail player " .. _source .. " - sb_police resource not running")
         end
     end
 end) 

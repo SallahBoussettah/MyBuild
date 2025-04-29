@@ -454,6 +454,9 @@ function DoTeleport()
     if Config.Alerts.enabled then
         TriggerServerEvent("sb_prisonbreak:alertLaw", GetEntityCoords(playerPed))
     end
+    
+    -- ADDED: Trigger server event to unjail the player after successful teleport
+    TriggerServerEvent("sb_prisonbreak:unjailPlayer")
     end)
     
     -- Activate cooldown
@@ -589,8 +592,34 @@ end)
 -- Create alert for nearby law enforcement
 RegisterNetEvent("sb_prisonbreak:alertLaw")
 AddEventHandler("sb_prisonbreak:alertLaw", function(coords)
-    -- This event handler is no longer needed as we're using VORP police alert system
-    -- Keeping this empty handler for backward compatibility with other resources
+    -- This is now handled directly through the server using the sb_police export
+    -- The server will determine which police officers to notify
+    
+    -- Optionally, we could play a sound or show an effect at the player's location
+    -- to indicate that an alert has been triggered
+    
+    if Config.Debug then
+        Debug("Prison break alert has been sent to law enforcement")
+    end
+end)
+
+-- Custom unjail event that doesn't teleport the player for Strawberry jail
+RegisterNetEvent("sb_prisonbreak:CustomUnjail")
+AddEventHandler("sb_prisonbreak:CustomUnjail", function()
+    local playerPed = PlayerPedId()
+    
+    -- Reset jail status flags
+    Jailed = false
+    
+    -- Execute the rc command to restore player's clothes
+    ExecuteCommand('rc')
+    
+    -- Notify the player they've been freed
+    VORPcore.NotifyBottomRight("You have been released from jail", 4000)
+    
+    if Config.Debug then
+        Debug("Custom unjail executed for Strawberry jail - Player remains at teleport destination")
+    end
 end)
 
 -- Register a command to get information about the teleport position
