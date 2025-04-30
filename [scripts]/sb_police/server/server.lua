@@ -1006,4 +1006,13 @@ AddEventHandler("sb_police:AlertPoliceServer", function(coords, message)
     exports.sb_police:AlertPolice(_source, coords, message)
 end)
 
+RegisterServerEvent('sb_police:checkhandcuffed')
+AddEventHandler('sb_police:checkhandcuffed', function(targetId)
+    local _source = source
+    
+    -- Since we can only access this from the police menu, we don't need additional checks
+    -- Just trigger the search event directly
+    TriggerClientEvent('sb_police:StartSearch', _source)
+end)
+
 BccUtils.Versioner.checkFile(GetCurrentResourceName(), 'https://github.com/BryceCanyonCounty/sb_police')

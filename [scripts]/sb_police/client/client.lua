@@ -16,6 +16,11 @@ dragStatus.isDragged = false
 Prompt2 = GetRandomIntInRange(0, 0xffffff)
 local prompt = GetRandomIntInRange(0, 0xffffff)
 
+-- Add this function to fix the missing GetClosestPlayer function
+function GetClosestPlayer()
+    return GetClosestPlayerPed()
+end
+
 CreateThread(function()
     local str = _U('opencabinet')
     Open = PromptRegisterBegin()
@@ -250,13 +255,19 @@ CreateThread(function()
     end
 end)
 
-RegisterNetEvent('sb_police:StartSearch', function()
-    local closestPlayer, closestDistance = GetClosestPlayer()
-    searchid = GetPlayerServerId(closestPlayer)
-    if closestPlayer ~= -1 and closestDistance <= 3.0 then
-        TriggerServerEvent("sb_police:ReloadInventory", searchid)
-        TriggerEvent("vorp_inventory:OpenstealInventory", _U('inventorytitle'), searchid)
+RegisterNetEvent('sb_police:StartSearch')
+AddEventHandler('sb_police:StartSearch', function()
+    local closestPlayer, closestDistance = GetClosestPlayerPed()
+    if closestPlayer == -1 or closestDistance > 3.0 then
+        Core.NotifyBottomRight(_U('notcloseenough'), 4000)
+        return
     end
+    
+    searchid = GetPlayerServerId(closestPlayer)
+    
+    -- Since this event is triggered from the police menu, we don't need to check job here
+    TriggerServerEvent("sb_police:ReloadInventory", searchid)
+    TriggerEvent("vorp_inventory:OpenstealInventory", _U('inventorytitle'), searchid)
 end)
 
 RegisterNetEvent('sb_police:GetSearch')

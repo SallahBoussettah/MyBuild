@@ -83,7 +83,7 @@ function GetClosestPlayerPed() -- Get closest player function
     return closestPlayer, closestDistance
 end
 
-function CuffPlayer(closestPlayer) -- Prompt and code to access Gun Cabinets
+function CuffPlayer(closestPlayer) -- Function to handle search prompts
     while true do
         local playercoords = GetEntityCoords(PlayerPedId())
         local tgtcoords = GetEntityCoords(GetPlayerPed(closestPlayer))
@@ -96,18 +96,22 @@ function CuffPlayer(closestPlayer) -- Prompt and code to access Gun Cabinets
                     if not Inmenu then
                         if not InWagon then
                             local item_name = CreateVarString(10, 'LITERAL_STRING', _U('searchplayer'))
-                            PromptSetActiveGroupThisFrame(prompt2, item_name)
+                            PromptSetActiveGroupThisFrame(Prompt2, item_name)
                         end
                     end
                 end
             end
         end
         if PromptHasHoldModeCompleted(Search) then
-            TriggerServerEvent('sb_police:grabdata', GetPlayerServerId(closestPlayer))
+            local targetId = GetPlayerServerId(closestPlayer)
+            TriggerServerEvent('sb_police:checkhandcuffed', targetId)
             Wait(200)
-            if Takenmoney then
-                SearchMenu(Takenmoney)
-            end
+            break -- Exit the loop after attempting search
+        end
+        
+        -- Exit the loop if player is too far away or search conditions are no longer met
+        if distance > 5.0 or isDead or not IsSearching then
+            break
         end
     end
 end

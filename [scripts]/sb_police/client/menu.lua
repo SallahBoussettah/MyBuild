@@ -140,6 +140,18 @@ function OpenPoliceMenu()
         end
     end)
     MyFirstPage:RegisterElement('button', {
+        label = _U('searchplayer'),
+        style = {},
+    }, function()
+        local closestPlayer, closestDistance = GetClosestPlayerPed()
+        if closestPlayer ~= -1 and closestDistance <= 3.0 then
+            -- Check if player is handcuffed before allowing search
+            TriggerServerEvent('sb_police:checkhandcuffed', GetPlayerServerId(closestPlayer))
+        else
+            Core.NotifyRightTip(_U('notcloseenough'), 4000)
+        end
+    end)
+    MyFirstPage:RegisterElement('button', {
         label = _U('putinoutvehicle'),
         style = {},
     }, function()
