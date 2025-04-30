@@ -24,6 +24,9 @@ Config.DynamitePrice = 1500
 
 Config.PoliceJobs = {
     'police',
+    'marshal',
+    'lawmen',
+    'sheriffrhodes',
 }
 
 

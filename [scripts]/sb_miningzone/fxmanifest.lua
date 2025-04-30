@@ -6,6 +6,17 @@ author 'Salah'
 description 'A script that restricts mining to specific zones on the map and adds mining stores'
 version '1.1.0'
 
+lua54 'yes'
+
+escrow_ignore {
+    'config/config.lua',
+    'shared/buyItemsCFG.lua',
+    'shared/sellItemsCFG.lua',
+    'shared/language.lua',
+    'README.md',
+    'LICENSE',
+}
+
 shared_scripts {
     'config/config.lua',
     'shared/language.lua',

@@ -13,6 +13,7 @@ local PlayerJob = nil
 local firstTime = true
 local robbedBankCooldowns = {} -- Store cooldown timers for robbed banks
 local robbedStoreCooldowns = {} -- Store cooldown timers for robbed stores
+local previousSecs = 0
 
 -- Initialize the script
 Citizen.CreateThread(function()
@@ -663,25 +664,52 @@ function PlaceDynamite(bankCoords)
         -- Notify about explosion
         TriggerEvent("vorp:TipRight", Config.Languages[Config.selectedLanguage].dynamiteBlowMessage, 10000)
         
-        -- Wait then show the explosion timer progress bar
+        -- Wait then start the custom explosion countdown that maintains player freedom
         Citizen.Wait(1000)
         
-        -- Show second progress bar for explosion countdown
-        local explosionBar = exports['vorp_progressbar']:initiate()
-        explosionBar.start("Dynamite will explode soon...", 5000, function()
-            -- Create explosion at bank
-            Citizen.InvokeNative(0x7D6F58F69DA92530, bankCoords.x, bankCoords.y, bankCoords.z, 25, 5.0, true, false, true)
-            ShakeGameplayCam("GAMEPLAY_EXPLOSION_SHAKE", 1.0)
-            
-            -- Update state
-            dynamiteSet = true
-            
-            -- Remove dynamite from inventory on server
-            TriggerServerEvent("sb_robbery:removeDynamite")
-            
-            -- Notify player
-            TriggerEvent("vorp:TipRight", "The vault is now open! Search for valuables!", 5000)
+        -- CUSTOM EXPLOSION COUNTDOWN - This completely bypasses the vorp_progressbar for the explosion phase
+        -- This ensures player movement is never restricted
+        local startTime = GetGameTimer()
+        local countdownTime = 5000 -- 5 seconds, same as the original timer
+        
+        -- Create a thread for the visual countdown
+        Citizen.CreateThread(function()
+            while (GetGameTimer() - startTime) < countdownTime do
+                -- Calculate remaining time
+                local remainingMs = countdownTime - (GetGameTimer() - startTime)
+                local remainingSecs = math.ceil(remainingMs / 1000)
+                
+                -- Display countdown text (using notifications instead of on-screen text)
+                if remainingSecs ~= previousSecs then
+                    TriggerEvent("vorp:TipBottom", "Dynamite will explode in " .. remainingSecs .. " seconds!", 1000)
+                    previousSecs = remainingSecs
+                end
+                
+                -- Enable specific movement controls
+                EnableControlAction(0, 0x8FFC75D6, true) -- Sprint
+                EnableControlAction(0, 0xD9D0E1C0, true) -- Jump
+                EnableControlAction(0, 0x7065027D, true) -- Movement
+                EnableControlAction(0, 0xFB9CADA2, true) -- Crouch
+                
+                Citizen.Wait(0)
+            end
         end)
+        
+        -- Wait for the countdown to finish and then trigger the explosion
+        Citizen.Wait(countdownTime + 100)
+        
+        -- Create explosion at bank
+        Citizen.InvokeNative(0x7D6F58F69DA92530, bankCoords.x, bankCoords.y, bankCoords.z, 25, 5.0, true, false, true)
+        ShakeGameplayCam("GAMEPLAY_EXPLOSION_SHAKE", 1.0)
+        
+        -- Update state
+        dynamiteSet = true
+        
+        -- Remove dynamite from inventory on server
+        TriggerServerEvent("sb_robbery:removeDynamite")
+        
+        -- Notify player
+        TriggerEvent("vorp:TipRight", "The vault is now open! Search for valuables!", 5000)
     end)
 end
 
