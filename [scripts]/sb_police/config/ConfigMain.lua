@@ -90,3 +90,71 @@ ConfigMain.openpolicemenu = "pmenu"            -- Open Police Menu Command
 ConfigMain.jailcommand = 'jail'               --Command to jail for cops and admins
 ConfigMain.unjailcommand = 'unjail'           --Command to unjail for cops and admins
 ConfigMain.finecommand = 'fine'               --Command to fine for cops and admins
+
+-- Police Office Blips Configuration
+ConfigMain.ShowOfficeBlips = true -- Set to false to disable all office blips
+ConfigMain.OfficeBlips = {
+    sisika = {
+        enabled = true,
+        name = "Sisika Penitentiary",
+        coords = { x = 3359.64, y = -668.57, z = 45.78 },
+        sprite = 1322310532, -- Using the government/law office icon
+        scale = 0.1
+    },
+    blackwater = {
+        enabled = true,
+        name = "Blackwater Sheriff Office",
+        coords = { x = -766.71, y = -1263.08, z = 44.02 },
+        sprite = 1322310532,
+        scale = 0.1
+    },
+    valentine = {
+        enabled = true,
+        name = "Valentine Sheriff Office",
+        coords = { x = -273.05, y = 810.97, z = 119.37 },
+        sprite = 1322310532,
+        scale = 0.1
+    },
+    armadillo = {
+        enabled = true,
+        name = "Armadillo Sheriff Office",
+        coords = { x = -3619.05, y = -2600.14, z = -13.34 },
+        sprite = 1322310532,
+        scale = 0.1
+    },
+    tumbleweed = {
+        enabled = true,
+        name = "Tumbleweed Sheriff Office",
+        coords = { x = -5528.43, y = -2926.27, z = -1.36 },
+        sprite = 1322310532,
+        scale = 0.1
+    },
+    strawberry = {
+        enabled = true,
+        name = "Strawberry Sheriff Office",
+        coords = { x = -1812.50, y = -355.99, z = 161.85 },
+        sprite = 1322310532,
+        scale = 0.1
+    },
+    rhodes = {
+        enabled = true,
+        name = "Rhodes Sheriff Office",
+        coords = { x = 1356.05, y = -1301.87, z = 77.76 },
+        sprite = 1322310532,
+        scale = 0.1
+    },
+    stdenis = {
+        enabled = true,
+        name = "Saint Denis Police Department",
+        coords = { x = 2502.75, y = -1310.78, z = 48.95 },
+        sprite = 1322310532,
+        scale = 0.1
+    },
+    annesburg = {
+        enabled = true,
+        name = "Annesburg Sheriff Office",
+        coords = { x = 2901.57, y = 1310.95, z = 44.93 },
+        sprite = 1322310532,
+        scale = 0.1
+    }
+}

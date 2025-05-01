@@ -1,20 +1,21 @@
-game 'rdr3'
 fx_version 'adamant'
 rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
 
+game 'rdr3'
+lua54 'yes'
 author 'Salah'
-description 'Gun Tricks for VORP Framework with Bounty Hunter License Requirement'
-version '1.7.0'
-
-shared_scripts {
-    'config.lua',
-}
+description 'Standalone object protection system for RedM'
 
 client_scripts {
-    'keymapping.lua',
-    'client.lua',
+    'client/objects.lua'
 }
 
 server_scripts {
-    'server.lua',
+    'server/objects.lua'
 }
+
+shared_scripts {
+    'config.lua'
+}
+
+version '1.0.0' 

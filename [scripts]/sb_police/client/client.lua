@@ -902,8 +902,17 @@ end)
 
 AddEventHandler('onResourceStop', function(resource) -- on resource restart remove Serviceblips
     if resource == GetCurrentResourceName() then
+        -- Clean up service blips
         RemoveBlip(Serviceblip)
         Choreamount = _U('none')
+        
+        -- Clean up office blips
+        for _, blip in pairs(OfficeBlips) do
+            if blip then
+                RemoveBlip(blip)
+            end
+        end
+        OfficeBlips = {}
     end
 end)
 
@@ -988,3 +997,59 @@ AddEventHandler("sb_police:ClearAlert", function()
         ClearGpsMultiRoute()
     end
 end)
+
+-- Blips for police office locations
+local OfficeBlips = {}
+
+---Creates blips for all police office locations defined in the config
+---@return nil
+local function CreateOfficeBlips()
+    -- Remove any existing office blips first
+    for _, blip in pairs(OfficeBlips) do
+        if blip then
+            RemoveBlip(blip)
+        end
+    end
+    
+    -- Clear the blips table
+    OfficeBlips = {}
+    
+    -- Only create blips if they're enabled globally
+    if not ConfigMain.ShowOfficeBlips then
+        return
+    end
+    
+    -- Loop through all office locations and create blips for enabled ones
+    for location, blipData in pairs(ConfigMain.OfficeBlips) do
+        if blipData.enabled then
+            -- Create the blip using the coordinates from config
+            local blip = N_0x554d9d53f696d002(1664425300, blipData.coords.x, blipData.coords.y, blipData.coords.z)
+            
+            -- Set the blip sprite to the sheriff blip
+            SetBlipSprite(blip, blipData.sprite, 1)
+            
+            -- Set blip scale if specified
+            if blipData.scale then
+                SetBlipScale(blip, blipData.scale)
+            end
+            
+            -- Set blip color for white icon on black background (matches the map screenshot)
+            Citizen.InvokeNative(0x662D364ABF16DE2F, blip, 0x000000)
+            
+            -- Name the blip
+            Citizen.InvokeNative(0x9CB1A1623062F402, blip, blipData.name)
+            
+            -- Store the blip handle in our table for cleanup later
+            OfficeBlips[location] = blip
+        end
+    end
+end
+
+-- Call CreateOfficeBlips when the resource starts
+Citizen.CreateThread(function()
+    Wait(1000) -- Wait a short time to ensure all resources are loaded
+    CreateOfficeBlips()
+    print("^2Police office blips initialized^7")
+end)
+
+-- The rest of existing resource code will remain below
