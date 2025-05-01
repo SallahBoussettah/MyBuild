@@ -7,6 +7,9 @@ BccUtils = exports['bcc-utils'].initiate()
 
 local Core = exports.vorp_core:GetCore()
 
+-- Initialize OfficeBlips as an empty table to avoid nil reference
+local OfficeBlips = {}
+
 TriggerServerEvent('sb_police:RegisterStorageSv')
 
 
@@ -903,16 +906,20 @@ end)
 AddEventHandler('onResourceStop', function(resource) -- on resource restart remove Serviceblips
     if resource == GetCurrentResourceName() then
         -- Clean up service blips
-        RemoveBlip(Serviceblip)
+        if Serviceblip then
+            RemoveBlip(Serviceblip)
+        end
         Choreamount = _U('none')
         
         -- Clean up office blips
-        for _, blip in pairs(OfficeBlips) do
-            if blip then
-                RemoveBlip(blip)
+        if type(OfficeBlips) == "table" then
+            for _, blip in pairs(OfficeBlips) do
+                if blip then
+                    RemoveBlip(blip)
+                end
             end
+            OfficeBlips = {}
         end
-        OfficeBlips = {}
     end
 end)
 
@@ -998,30 +1005,29 @@ AddEventHandler("sb_police:ClearAlert", function()
     end
 end)
 
--- Blips for police office locations
-local OfficeBlips = {}
-
 ---Creates blips for all police office locations defined in the config
 ---@return nil
 local function CreateOfficeBlips()
     -- Remove any existing office blips first
-    for _, blip in pairs(OfficeBlips) do
-        if blip then
-            RemoveBlip(blip)
+    if type(OfficeBlips) == "table" then
+        for _, blip in pairs(OfficeBlips) do
+            if blip then
+                RemoveBlip(blip)
+            end
         end
     end
     
     -- Clear the blips table
     OfficeBlips = {}
     
-    -- Only create blips if they're enabled globally
-    if not ConfigMain.ShowOfficeBlips then
+    -- Only create blips if they're enabled globally and if the config exists
+    if not ConfigMain.ShowOfficeBlips or not ConfigMain.OfficeBlips then
         return
     end
     
     -- Loop through all office locations and create blips for enabled ones
     for location, blipData in pairs(ConfigMain.OfficeBlips) do
-        if blipData.enabled then
+        if blipData and blipData.enabled and blipData.coords then
             -- Create the blip using the coordinates from config
             local blip = N_0x554d9d53f696d002(1664425300, blipData.coords.x, blipData.coords.y, blipData.coords.z)
             
@@ -1049,7 +1055,7 @@ end
 Citizen.CreateThread(function()
     Wait(1000) -- Wait a short time to ensure all resources are loaded
     CreateOfficeBlips()
-    print("^2Police office blips initialized^7")
+    -- print("^2Police office blips initialized^7")
 end)
 
 -- The rest of existing resource code will remain below
