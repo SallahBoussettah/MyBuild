@@ -462,15 +462,64 @@ AddEventHandler("sb_police:taketime", function()
 end)
 
 RegisterServerEvent("sb_police:guncabinet") -- Adds weapon from gun cabinet
-AddEventHandler("sb_police:guncabinet", function(weapon, ammoList, compList)
+AddEventHandler("sb_police:guncabinet", function(weapon)
     local _source = source
-    exports.vorp_inventory:createWeapon(_source, weapon, ammoList, compList)
+    
+    -- Debug logging
+    print("^2[sb_police:guncabinet]^7 Source: " .. _source .. ", Weapon requested: " .. tostring(weapon))
+    
+    -- Check if the weapon name is valid and not nil
+    if weapon and weapon ~= "" then
+        -- Convert to uppercase to match the format in VORP inventory
+        local weaponName = weapon:upper()
+        
+        -- Debug logging
+        print("^2[sb_police:guncabinet]^7 Attempting to create weapon: " .. weaponName)
+        
+        -- Create empty tables for ammo and components
+        local ammoTable = {}
+        local componentTable = {}
+        local compTable = {}
+        
+        -- Call the createWeapon function with all required parameters
+        local success = exports.vorp_inventory:createWeapon(_source, weaponName, ammoTable, componentTable, compTable)
+        
+        -- Debug logging
+        if success then
+            print("^2[sb_police:guncabinet]^7 Successfully created weapon for player " .. _source)
+        else
+            print("^1[sb_police:guncabinet]^7 Failed to create weapon for player " .. _source)
+        end
+    else
+        -- Notify the player if the weapon selection is invalid
+        print("^1[sb_police:guncabinet]^7 Invalid weapon selection from player " .. _source)
+        TriggerClientEvent("vorp:TipRight", _source, "Invalid weapon selection", 3000)
+    end
 end)
 
 RegisterServerEvent("sb_police:addammo") -- Adds weapon from gun cabinet
 AddEventHandler("sb_police:addammo", function(ammotype)
     local _source = source
-    exports.vorp_inventory:addItem(_source, ammotype, 1)
+    
+    -- Debug logging
+    print("^2[sb_police:addammo]^7 Source: " .. _source .. ", Ammo requested: " .. tostring(ammotype))
+    
+    -- Check if the ammo type is valid
+    if ammotype and ammotype ~= "" then
+        -- Try to add the item
+        local success = exports.vorp_inventory:addItem(_source, ammotype, 1)
+        
+        -- Debug logging for result
+        if success then
+            print("^2[sb_police:addammo]^7 Successfully added ammo " .. ammotype .. " for player " .. _source)
+        else
+            print("^1[sb_police:addammo]^7 Failed to add ammo " .. ammotype .. " for player " .. _source)
+        end
+    else
+        -- Notify the player if the ammo selection is invalid
+        print("^1[sb_police:addammo]^7 Invalid ammo selection from player " .. _source)
+        TriggerClientEvent("vorp:TipRight", _source, "Invalid ammo selection", 3000)
+    end
 end)
 
 function getTime() -- GEt time function

@@ -455,18 +455,20 @@
             style = {}
         })
 
-        local selectedweapon
+        -- Initialize selectedweapon with a default value
+        selectedweapon = ConfigCabinets.WeaponsandAmmo.RevolverSpawnName1
+
         MyFirstPage:RegisterElement('arrows', {
             label = _U('weaponoptions'),
             start = 1,
             options = {
                 { display = ConfigCabinets.WeaponsandAmmo.RevolverName1, value = ConfigCabinets.WeaponsandAmmo.RevolverSpawnName1 },
                 { display = ConfigCabinets.WeaponsandAmmo.RevolverName2, value = ConfigCabinets.WeaponsandAmmo.RevolverSpawnName2 },
-                { display = ConfigCabinets.WeaponsandAmmo.RepeaterName,  value = ConfigCabinets.WeaponsandAmmo.RepeaterSpawnName },
-                { display = ConfigCabinets.WeaponsandAmmo.RifleName,  value = ConfigCabinets.WeaponsandAmmo.RifleSpawnName },
-                { display = ConfigCabinets.WeaponsandAmmo.ShotgunName,  value = ConfigCabinets.WeaponsandAmmo.ShotgunSpawnName },
-                { display = ConfigCabinets.WeaponsandAmmo.KnifeName,     value = ConfigCabinets.WeaponsandAmmo.KnifeSpawnName },
-                { display = ConfigCabinets.WeaponsandAmmo.LassoName,     value = ConfigCabinets.WeaponsandAmmo.LassoSpawnName },
+                { display = ConfigCabinets.WeaponsandAmmo.RepeaterName, value = ConfigCabinets.WeaponsandAmmo.RepeaterSpawnName },
+                { display = ConfigCabinets.WeaponsandAmmo.RifleName, value = ConfigCabinets.WeaponsandAmmo.RifleSpawnName },
+                { display = ConfigCabinets.WeaponsandAmmo.ShotgunName, value = ConfigCabinets.WeaponsandAmmo.ShotgunSpawnName },
+                { display = ConfigCabinets.WeaponsandAmmo.KnifeName, value = ConfigCabinets.WeaponsandAmmo.KnifeSpawnName },
+                { display = ConfigCabinets.WeaponsandAmmo.LassoName, value = ConfigCabinets.WeaponsandAmmo.LassoSpawnName },
             }
         }, function(data)
             selectedweapon = data.value.value
@@ -504,7 +506,9 @@
             style = {}
         })
 
-        local ammotype
+        -- Initialize ammotype with a default value
+        local ammotype = ConfigCabinets.WeaponsandAmmo.RevolverAmmoType
+        
         MyFirstPage:RegisterElement('arrows', {
             label = _U('ammooptions'),
             start = 1,
@@ -517,12 +521,13 @@
         }, function(data)
             ammotype = data.value.value
             -- This gets triggered whenever the arrow selected value changes
-            print(ammotype)
+            print("Selected ammo type: " .. ammotype)
         end)
         MyFirstPage:RegisterElement('button', {
             label = _U('grabammo'),
             style = {},
         }, function()
+            print("Requesting ammo: " .. ammotype)
             TriggerServerEvent("sb_police:addammo", ammotype)
         end)
         MyFirstPage:RegisterElement('button', {
